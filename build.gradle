@@ -30,6 +30,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     compile group: 'org.hibernate', name: 'hibernate-validator', version: '6.1.6.Final'
+    compile group: 'org.modelmapper', name: 'modelmapper', version: '2.3.8'
+    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '3.0.0'
 }
 
 test {

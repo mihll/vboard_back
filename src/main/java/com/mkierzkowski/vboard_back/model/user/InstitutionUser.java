@@ -1,4 +1,4 @@
-package com.mkierzkowski.vboard_back.model;
+package com.mkierzkowski.vboard_back.model.user;
 
 import lombok.AccessLevel;
 import lombok.Data;

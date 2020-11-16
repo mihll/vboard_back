@@ -1,8 +1,9 @@
-package com.mkierzkowski.vboard_back.model;
+package com.mkierzkowski.vboard_back.model.user;
 
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.Entity;
@@ -11,6 +12,7 @@ import java.util.Date;
 
 @Entity
 @Data
+@Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PersonUser extends User {
