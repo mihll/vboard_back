@@ -1,8 +1,11 @@
 package com.mkierzkowski.vboard_back.controller.api;
 
+import com.mkierzkowski.vboard_back.controller.request.InstitutionUserSignupRequest;
 import com.mkierzkowski.vboard_back.controller.request.PersonUserSignupRequest;
+import com.mkierzkowski.vboard_back.dto.model.user.RegisterInstitutionUserDto;
 import com.mkierzkowski.vboard_back.dto.model.user.RegisterPersonUserDto;
 import com.mkierzkowski.vboard_back.dto.response.Response;
+import com.mkierzkowski.vboard_back.service.user.InstitutionUserService;
 import com.mkierzkowski.vboard_back.service.user.PersonUserService;
 import com.mkierzkowski.vboard_back.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +26,9 @@ public class UserController {
     @Autowired
     PersonUserService personUserService;
 
+    @Autowired
+    InstitutionUserService institutionUserService;
+
     @SuppressWarnings("rawtypes")
     @PostMapping("/signup/person")
     public Response signup(@RequestBody @Valid PersonUserSignupRequest personUserSignupRequest) {
@@ -37,6 +43,21 @@ public class UserController {
                 .setLastName(personUserSignupRequest.getLastName());
 
         return personUserService.signup(registerPersonUserDto);
+    }
+
+    @SuppressWarnings("rawtypes")
+    @PostMapping("/signup/institution")
+    public Response signup(@RequestBody @Valid InstitutionUserSignupRequest institutionUserSignupRequest) {
+        return Response.ok().setPayload(registerInstitutionUser(institutionUserSignupRequest));
+    }
+
+    private RegisterInstitutionUserDto registerInstitutionUser(InstitutionUserSignupRequest institutionUserSignupRequest) {
+        RegisterInstitutionUserDto registerInstitutionUserDto = new RegisterInstitutionUserDto()
+                .setEmail(institutionUserSignupRequest.getEmail())
+                .setPassword(institutionUserSignupRequest.getPassword())
+                .setInstitutionName(institutionUserSignupRequest.getInstitutionName());
+
+        return institutionUserService.signup(registerInstitutionUserDto);
     }
 
 }

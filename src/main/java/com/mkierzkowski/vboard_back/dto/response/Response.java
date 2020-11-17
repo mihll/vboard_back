@@ -2,6 +2,7 @@ package com.mkierzkowski.vboard_back.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.mkierzkowski.vboard_back.util.DateUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,8 +27,27 @@ public class Response<T> {
         return response;
     }
 
-    public enum Status {
-        OK
+    public static <T> Response<T> notFound() {
+        Response<T> response = new Response<>();
+        response.setStatus(Status.NOT_FOUND);
+        return response;
     }
 
+    public static <T> Response<T> duplicateEntity() {
+        Response<T> response = new Response<>();
+        response.setStatus(Status.DUPLICATE_ENTITY);
+        return response;
+    }
+
+    public void addErrorMsgToResponse(String errorMsg, Exception ex) {
+        ResponseError error = new ResponseError()
+                .setDetails(errorMsg)
+                .setMessage(ex.getMessage())
+                .setTimestamp(DateUtils.today());
+        setErrors(error);
+    }
+
+    public enum Status {
+        OK, NOT_FOUND, DUPLICATE_ENTITY
+    }
 }
