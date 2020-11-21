@@ -30,6 +30,13 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .passwordEncoder(bCryptPasswordEncoder);
     }
 
+    @Override
+    public void configure(org.springframework.security.config.annotation.web.builders.WebSecurity web) {
+        web.ignoring().antMatchers(
+                "/v2/api-docs", "/configuration/ui", "/configuration/security",
+                "/webjars/**", "/swagger-resources/**", "/swagger-ui/**", "/swagger-ui/index.html", "/swagger-ui/");
+    }
+
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .cors().and().csrf().disable().authorizeRequests()
@@ -50,4 +57,5 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
         return source;
     }
+
 }
