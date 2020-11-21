@@ -32,7 +32,8 @@ public class InstitutionUserServiceImpl implements InstitutionUserService {
                     .setInstitutionName(registerInstitutionUserDto.getInstitutionName())
                     .setProfileImgUrl("testProfilePicInstURL")
                     .setEmail(registerInstitutionUserDto.getEmail())
-                    .setPassword(bCryptPasswordEncoder.encode(registerInstitutionUserDto.getPassword()));
+                    .setPassword(bCryptPasswordEncoder.encode(registerInstitutionUserDto.getPassword()))
+                    .setEnabled(false);
             return InstitutionUserMapper.toRegisterInstitutionUserDto(institutionUserRepository.save(institutionUser));
         }
         throw exception(EntityType.USER, ExceptionType.DUPLICATE_ENTITY, registerInstitutionUserDto.getEmail());

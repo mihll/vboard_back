@@ -33,6 +33,7 @@ dependencies {
     compile group: 'org.modelmapper', name: 'modelmapper', version: '2.3.8'
     compile group: 'com.auth0', name: 'java-jwt', version: '3.11.0'
     implementation "io.springfox:springfox-boot-starter:3.0.0"
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 test {

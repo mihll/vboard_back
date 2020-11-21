@@ -28,4 +28,12 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         response.addErrorMsgToResponse(ex.getMessage(), ex);
         return new ResponseEntity(response, HttpStatus.CONFLICT);
     }
+
+    @SuppressWarnings("rawtypes, unchecked")
+    @ExceptionHandler(VBoardException.VerificationEmailException.class)
+    public final ResponseEntity handleVerificationEmailExceptions(Exception ex, WebRequest request) {
+        Response response = Response.verificationEmailError();
+        response.addErrorMsgToResponse(ex.getMessage(), ex);
+        return new ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

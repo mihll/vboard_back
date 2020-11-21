@@ -12,6 +12,8 @@ public class VBoardException {
             return new EntityNotFoundException(format(messageTemplate, args));
         } else if (ExceptionType.DUPLICATE_ENTITY.equals(exceptionType)) {
             return new DuplicateEntityException(format(messageTemplate, args));
+        } else if (ExceptionType.VERIFICATION_EMAIL_ERROR.equals(exceptionType)) {
+            return new VerificationEmailException(format(messageTemplate, args));
         }
         return new RuntimeException(format(messageTemplate, args));
     }
@@ -32,6 +34,12 @@ public class VBoardException {
 
     public static class DuplicateEntityException extends RuntimeException {
         public DuplicateEntityException(String message) {
+            super(message);
+        }
+    }
+
+    public static class VerificationEmailException extends RuntimeException {
+        public VerificationEmailException(String message) {
             super(message);
         }
     }

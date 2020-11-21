@@ -39,6 +39,12 @@ public class Response<T> {
         return response;
     }
 
+    public static <T> Response<T> verificationEmailError() {
+        Response<T> response = new Response<>();
+        response.setStatus(Status.VERIFICATION_EMAIL_ERROR);
+        return response;
+    }
+
     public void addErrorMsgToResponse(String errorMsg, Exception ex) {
         ResponseError error = new ResponseError()
                 .setDetails(errorMsg)
@@ -48,6 +54,6 @@ public class Response<T> {
     }
 
     public enum Status {
-        OK, NOT_FOUND, DUPLICATE_ENTITY
+        OK, NOT_FOUND, DUPLICATE_ENTITY, VERIFICATION_EMAIL_ERROR
     }
 }

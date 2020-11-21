@@ -41,7 +41,6 @@ public class UserController {
                 .setPassword(personUserSignupRequest.getPassword())
                 .setFirstName(personUserSignupRequest.getFirstName())
                 .setLastName(personUserSignupRequest.getLastName());
-
         return personUserService.signup(registerPersonUserDto);
     }
 

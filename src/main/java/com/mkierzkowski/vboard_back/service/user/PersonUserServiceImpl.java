@@ -9,12 +9,17 @@ import com.mkierzkowski.vboard_back.model.user.PersonUser;
 import com.mkierzkowski.vboard_back.model.user.User;
 import com.mkierzkowski.vboard_back.repository.PersonUserRepository;
 import com.mkierzkowski.vboard_back.repository.UserRepository;
+import com.mkierzkowski.vboard_back.service.registrationmail.OnRegistrationCompleteEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PersonUserServiceImpl implements PersonUserService {
+    @Autowired
+    ApplicationEventPublisher eventPublisher;
+
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -33,8 +38,15 @@ public class PersonUserServiceImpl implements PersonUserService {
                     .setLastName(registerPersonUserDto.getLastName())
                     .setProfileImgUrl("testProfilePicURL")
                     .setEmail(registerPersonUserDto.getEmail())
-                    .setPassword(bCryptPasswordEncoder.encode(registerPersonUserDto.getPassword()));
-            return PersonUserMapper.toRegisterPersonUserDto(personUserRepository.save(personUser));
+                    .setPassword(bCryptPasswordEncoder.encode(registerPersonUserDto.getPassword()))
+                    .setEnabled(false);
+            PersonUser registeredPersonUser = personUserRepository.save(personUser);
+            try {
+                eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredPersonUser));
+            } catch (RuntimeException ex) {
+                throw exception(EntityType.USER, ExceptionType.VERIFICATION_EMAIL_ERROR);
+            }
+            return PersonUserMapper.toRegisterPersonUserDto(registeredPersonUser);
         }
         throw exception(EntityType.USER, ExceptionType.DUPLICATE_ENTITY, registerPersonUserDto.getEmail());
     }
