@@ -36,4 +36,20 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         response.addErrorMsgToResponse(ex.getMessage(), ex);
         return new ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @SuppressWarnings("rawtypes, unchecked")
+    @ExceptionHandler(VBoardException.ExpiredVerificationTokenException.class)
+    public final ResponseEntity handleExpiredVerificationTokenExceptions(Exception ex, WebRequest request) {
+        Response response = Response.expiredVerificationToken();
+        response.addErrorMsgToResponse(ex.getMessage(), ex);
+        return new ResponseEntity(response, HttpStatus.UNAUTHORIZED);
+    }
+
+    @SuppressWarnings("rawtypes, unchecked")
+    @ExceptionHandler(VBoardException.NotVerifiedException.class)
+    public final ResponseEntity handleNotVerifiedExceptions(Exception ex, WebRequest request) {
+        Response response = Response.notVerified();
+        response.addErrorMsgToResponse(ex.getMessage(), ex);
+        return new ResponseEntity(response, HttpStatus.UNAUTHORIZED);
+    }
 }

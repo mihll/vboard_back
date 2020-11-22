@@ -1,6 +1,21 @@
 package com.mkierzkowski.vboard_back.exception;
 
+import com.mkierzkowski.vboard_back.config.PropertiesConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.text.MessageFormat;
+import java.util.Optional;
+
+@Component
 public class VBoardException {
+
+    private static PropertiesConfig propertiesConfig;
+
+    @Autowired
+    public VBoardException(PropertiesConfig propertiesConfig) {
+        VBoardException.propertiesConfig = propertiesConfig;
+    }
 
     public static RuntimeException throwException(EntityType entityType, ExceptionType exceptionType, String... args) {
         String messageTemplate = getMessageTemplate(entityType, exceptionType);
@@ -14,6 +29,10 @@ public class VBoardException {
             return new DuplicateEntityException(format(messageTemplate, args));
         } else if (ExceptionType.VERIFICATION_EMAIL_ERROR.equals(exceptionType)) {
             return new VerificationEmailException(format(messageTemplate, args));
+        } else if (ExceptionType.EXPIRED.equals(exceptionType)) {
+            return new ExpiredVerificationTokenException(format(messageTemplate, args));
+        } else if (ExceptionType.NOT_VERIFIED.equals(exceptionType)) {
+            return new NotVerifiedException(format(messageTemplate, args));
         }
         return new RuntimeException(format(messageTemplate, args));
     }
@@ -23,7 +42,8 @@ public class VBoardException {
     }
 
     private static String format(String template, String... args) {
-        return String.format(template, (Object[]) args);
+        Optional<String> templateContent = Optional.ofNullable(propertiesConfig.getConfigValue(template));
+        return templateContent.map(s -> MessageFormat.format(s, (Object[]) args)).orElseGet(() -> String.format(template, (Object[]) args));
     }
 
     public static class EntityNotFoundException extends RuntimeException {
@@ -40,6 +60,18 @@ public class VBoardException {
 
     public static class VerificationEmailException extends RuntimeException {
         public VerificationEmailException(String message) {
+            super(message);
+        }
+    }
+
+    public static class ExpiredVerificationTokenException extends RuntimeException {
+        public ExpiredVerificationTokenException(String message) {
+            super(message);
+        }
+    }
+
+    public static class NotVerifiedException extends RuntimeException {
+        public NotVerifiedException(String message) {
             super(message);
         }
     }

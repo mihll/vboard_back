@@ -33,6 +33,12 @@ public class Response<T> {
         return response;
     }
 
+    public static <T> Response<T> notVerified() {
+        Response<T> response = new Response<>();
+        response.setStatus(Status.NOT_VERIFIED);
+        return response;
+    }
+
     public static <T> Response<T> duplicateEntity() {
         Response<T> response = new Response<>();
         response.setStatus(Status.DUPLICATE_ENTITY);
@@ -45,6 +51,12 @@ public class Response<T> {
         return response;
     }
 
+    public static <T> Response<T> expiredVerificationToken() {
+        Response<T> response = new Response<>();
+        response.setStatus(Status.EXPIRED);
+        return response;
+    }
+
     public void addErrorMsgToResponse(String errorMsg, Exception ex) {
         ResponseError error = new ResponseError()
                 .setDetails(errorMsg)
@@ -54,6 +66,6 @@ public class Response<T> {
     }
 
     public enum Status {
-        OK, NOT_FOUND, DUPLICATE_ENTITY, VERIFICATION_EMAIL_ERROR
+        OK, NOT_FOUND, DUPLICATE_ENTITY, VERIFICATION_EMAIL_ERROR, EXPIRED, NOT_VERIFIED
     }
 }

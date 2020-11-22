@@ -15,9 +15,6 @@ import lombok.experimental.Accessors;
 @ToString
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserDto {
+public class VerificationDto {
     private String email;
-    private String password;
-    private String profileImgUrl;
-    private Boolean enabled;
 }

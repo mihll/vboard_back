@@ -1,6 +1,8 @@
 package com.mkierzkowski.vboard_back.service.user;
 
+import com.mkierzkowski.vboard_back.dto.mapper.user.VerificationMapper;
 import com.mkierzkowski.vboard_back.dto.model.user.UserDto;
+import com.mkierzkowski.vboard_back.dto.model.user.VerificationDto;
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
@@ -29,6 +31,13 @@ public class UserServiceImpl implements UserService {
             return modelMapper.map(user.get(), UserDto.class);
         }
         throw exception(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, email);
+    }
+
+    @Override
+    public VerificationDto verifyRegisteredUser(User user) {
+        user.setEnabled(true);
+        userRepository.save(user);
+        return VerificationMapper.toVerificationDto(user);
     }
 
     private RuntimeException exception(EntityType entityType, ExceptionType exceptionType, String... args) {
