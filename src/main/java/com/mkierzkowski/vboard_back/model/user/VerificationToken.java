@@ -23,6 +23,7 @@ public class VerificationToken {
 
     String token;
 
+    @SuppressWarnings("JpaDataSourceORMInspection")
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id")
     User user;
@@ -34,13 +35,13 @@ public class VerificationToken {
 
         this.token = token;
         this.user = user;
-        this.expiryDate = calculateExpiryDate(EXPIRATION);
+        this.expiryDate = calculateExpiryDate();
     }
 
-    Date calculateExpiryDate(int expiryTimeInMinutes) {
+    Date calculateExpiryDate() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Timestamp(cal.getTime().getTime()));
-        cal.add(Calendar.MINUTE, expiryTimeInMinutes);
+        cal.add(Calendar.MINUTE, VerificationToken.EXPIRATION);
         return new Date(cal.getTime().getTime());
     }
 }

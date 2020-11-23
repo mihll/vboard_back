@@ -33,6 +33,11 @@ public class UserServiceImpl implements UserService {
         throw exception(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, email);
     }
 
+    @Transactional
+    public void deleteUser(User user) {
+        userRepository.delete(user);
+    }
+
     @Override
     public VerificationDto verifyRegisteredUser(User user) {
         user.setEnabled(true);

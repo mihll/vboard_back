@@ -11,6 +11,7 @@ import com.mkierzkowski.vboard_back.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.util.Calendar;
 
 @Component
@@ -33,6 +34,17 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
     }
 
     @Override
+    public void deleteVerificationToken(VerificationToken verificationToken) {
+        tokenRepository.delete(verificationToken);
+    }
+
+    @Override
+    public Iterable<VerificationToken> getAllVerificationTokens() {
+        return tokenRepository.findAll();
+    }
+
+    @Override
+    @Transactional
     public VerificationDto verify(String token) {
         VerificationToken verificationToken = tokenRepository.findByToken(token);
         if (verificationToken == null) {
@@ -41,8 +53,11 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
         User user = verificationToken.getUser();
         Calendar cal = Calendar.getInstance();
         if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
+            tokenRepository.delete(verificationToken);
+            userService.deleteUser(user);
             throw exception(EntityType.VERIFICATION_TOKEN, ExceptionType.EXPIRED, token);
         }
+        tokenRepository.delete(verificationToken);
         return userService.verifyRegisteredUser(user);
     }
 

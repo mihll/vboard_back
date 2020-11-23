@@ -9,5 +9,9 @@ public interface VerificationTokenService {
 
     VerificationToken getVerificationToken(String verificationToken);
 
+    Iterable<VerificationToken> getAllVerificationTokens();
+
+    void deleteVerificationToken(VerificationToken verificationToken);
+
     VerificationDto verify(String token);
 }

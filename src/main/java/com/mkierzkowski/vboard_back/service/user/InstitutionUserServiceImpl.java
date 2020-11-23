@@ -9,12 +9,17 @@ import com.mkierzkowski.vboard_back.model.user.InstitutionUser;
 import com.mkierzkowski.vboard_back.model.user.User;
 import com.mkierzkowski.vboard_back.repository.InstitutionUserRepository;
 import com.mkierzkowski.vboard_back.repository.UserRepository;
+import com.mkierzkowski.vboard_back.service.registrationmail.OnRegistrationCompleteEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
 public class InstitutionUserServiceImpl implements InstitutionUserService {
+    @Autowired
+    ApplicationEventPublisher eventPublisher;
+
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -34,7 +39,13 @@ public class InstitutionUserServiceImpl implements InstitutionUserService {
                     .setEmail(registerInstitutionUserDto.getEmail())
                     .setPassword(bCryptPasswordEncoder.encode(registerInstitutionUserDto.getPassword()))
                     .setEnabled(false);
-            return InstitutionUserMapper.toRegisterInstitutionUserDto(institutionUserRepository.save(institutionUser));
+            InstitutionUser registeredInstitutionUser = institutionUserRepository.save(institutionUser);
+            try {
+                eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredInstitutionUser));
+            } catch (RuntimeException ex) {
+                throw exception(EntityType.USER, ExceptionType.VERIFICATION_EMAIL_ERROR);
+            }
+            return InstitutionUserMapper.toRegisterInstitutionUserDto(registeredInstitutionUser);
         }
         throw exception(EntityType.USER, ExceptionType.DUPLICATE_ENTITY, registerInstitutionUserDto.getEmail());
     }

@@ -7,5 +7,7 @@ import com.mkierzkowski.vboard_back.model.user.User;
 public interface UserService {
     UserDto findUserByEmail(String email);
 
+    void deleteUser(User user);
+
     VerificationDto verifyRegisteredUser(User user);
 }
