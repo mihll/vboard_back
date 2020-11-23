@@ -2,8 +2,12 @@ package com.mkierzkowski.vboard_back.controller.api;
 
 import com.mkierzkowski.vboard_back.controller.request.InstitutionUserSignupRequest;
 import com.mkierzkowski.vboard_back.controller.request.PersonUserSignupRequest;
+import com.mkierzkowski.vboard_back.controller.request.UserPasswordChangeRequest;
+import com.mkierzkowski.vboard_back.controller.request.UserPasswordResetRequest;
 import com.mkierzkowski.vboard_back.dto.model.user.RegisterInstitutionUserDto;
 import com.mkierzkowski.vboard_back.dto.model.user.RegisterPersonUserDto;
+import com.mkierzkowski.vboard_back.dto.model.user.UserPasswordChangeDto;
+import com.mkierzkowski.vboard_back.dto.model.user.UserPasswordResetDto;
 import com.mkierzkowski.vboard_back.dto.response.Response;
 import com.mkierzkowski.vboard_back.service.registrationmail.VerificationTokenService;
 import com.mkierzkowski.vboard_back.service.user.InstitutionUserService;
@@ -64,6 +68,23 @@ public class UserController {
     @GetMapping("/signup/confirm")
     public Response confirm(@RequestParam("token") String token) {
         return Response.ok().setPayload(verificationTokenService.verify(token));
+    }
+
+    @SuppressWarnings("rawtypes")
+    @PostMapping("/resetPassword")
+    public Response resetPassword(@RequestBody @Valid UserPasswordResetRequest userPasswordResetRequest) {
+        UserPasswordResetDto userPasswordResetDto = new UserPasswordResetDto()
+                .setEmail(userPasswordResetRequest.getEmail());
+        return Response.ok().setPayload(userService.resetPassword(userPasswordResetDto));
+    }
+
+    @SuppressWarnings("rawtypes")
+    @PostMapping("/changePassword")
+    public Response changePassword(@RequestBody @Valid UserPasswordChangeRequest userPasswordChangeRequest, @RequestParam("token") String token) {
+        UserPasswordChangeDto userPasswordChangeDto = new UserPasswordChangeDto()
+                .setNewPassword(userPasswordChangeRequest.getPassword())
+                .setToken(token);
+        return Response.ok().setPayload(userService.changePassword(userPasswordChangeDto));
     }
 
 }

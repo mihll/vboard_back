@@ -1,10 +1,11 @@
 package com.mkierzkowski.vboard_back.scheduledtasks;
 
+import com.mkierzkowski.vboard_back.model.user.PasswordResetToken;
 import com.mkierzkowski.vboard_back.model.user.User;
 import com.mkierzkowski.vboard_back.model.user.VerificationToken;
 import com.mkierzkowski.vboard_back.service.registrationmail.VerificationTokenService;
+import com.mkierzkowski.vboard_back.service.user.PasswordResetTokenService;
 import com.mkierzkowski.vboard_back.service.user.UserService;
-import com.mkierzkowski.vboard_back.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +23,14 @@ public class ScheduledTasks {
     VerificationTokenService verificationTokenService;
 
     @Autowired
+    PasswordResetTokenService passwordResetTokenService;
+
+    @Autowired
     UserService userService;
 
     @Scheduled(fixedRate = 60 * 60 * 1000)
     public void deleteExpiredUsers() {
-        log.info("Starting expired users removal... (" + DateUtils.today() + ")");
+        log.info("Starting expired users removal...");
         Calendar cal = Calendar.getInstance();
         Iterable<VerificationToken> verificationTokens = verificationTokenService.getAllVerificationTokens();
         AtomicInteger removalCounter = new AtomicInteger();
@@ -39,6 +43,23 @@ public class ScheduledTasks {
                 userService.deleteUser(user);
             }
         }));
-        log.info("Expired users removal finished - removed " + removalCounter + " users (" + DateUtils.today() + ")");
+        log.info("Expired users removal finished - removed " + removalCounter + " users");
+    }
+
+    @Scheduled(fixedRate = 60 * 60 * 1000)
+    public void deleteExpiredPasswordResetTokens() {
+        log.info("Starting expired password reset tokens removal...");
+        Calendar cal = Calendar.getInstance();
+        Iterable<PasswordResetToken> passwordResetTokens = passwordResetTokenService.getAllPasswordResetTokens();
+        AtomicInteger removalCounter = new AtomicInteger();
+        passwordResetTokens.forEach((passwordResetToken -> {
+            if ((passwordResetToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
+                User user = passwordResetToken.getUser();
+                log.info("EXPIRED: Deleting password reset token for - " + user.getEmail());
+                removalCounter.getAndIncrement();
+                passwordResetTokenService.deletePasswordResetToken(passwordResetToken);
+            }
+        }));
+        log.info("Expired password reset tokens removal finished - removed " + removalCounter + " tokens");
     }
 }
