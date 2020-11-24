@@ -16,8 +16,9 @@ import java.util.ArrayList;
 
 import static com.mkierzkowski.vboard_back.security.SecurityConstants.*;
 
-public class JWTAuthorizationFIlter extends BasicAuthenticationFilter {
-    public JWTAuthorizationFIlter(AuthenticationManager authenticationManager) {
+public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
+
+    public JWTAuthorizationFilter(AuthenticationManager authenticationManager) {
         super(authenticationManager);
     }
 

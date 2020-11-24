@@ -7,7 +7,8 @@ import org.springframework.core.env.Environment;
 
 @Configuration
 @PropertySource("classpath:custom.properties")
-public class PropertiesConfig {
+public class CustomPropertiesConfig {
+
     @Autowired
     private Environment env;
 

@@ -4,6 +4,7 @@ import com.mkierzkowski.vboard_back.model.user.User;
 import org.springframework.context.ApplicationEvent;
 
 public class OnRegistrationCompleteEvent extends ApplicationEvent {
+
     private User user;
 
     public OnRegistrationCompleteEvent(User user) {

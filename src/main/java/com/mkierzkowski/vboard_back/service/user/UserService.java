@@ -1,16 +1,16 @@
 package com.mkierzkowski.vboard_back.service.user;
 
-import com.mkierzkowski.vboard_back.dto.model.user.*;
+import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordChangeRequestDto;
+import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordResetRequestDto;
 import com.mkierzkowski.vboard_back.model.user.User;
 
 public interface UserService {
-    UserDto findUserByEmail(String email);
 
     void deleteUser(User user);
 
-    VerificationDto verifyRegisteredUser(User user);
+    void verifyUserForToken(String token);
 
-    UserPasswordResetDto resetPassword(UserPasswordResetDto userPasswordResetDto);
+    void resetPassword(UserPasswordResetRequestDto userPasswordResetRequestDto);
 
-    UserPasswordChangedDto changePassword(UserPasswordChangeDto userPasswordChangeDto);
+    void changePassword(UserPasswordChangeRequestDto UserPasswordChangeRequestDto, String token);
 }

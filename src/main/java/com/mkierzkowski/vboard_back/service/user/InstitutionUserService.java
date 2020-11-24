@@ -1,7 +1,7 @@
 package com.mkierzkowski.vboard_back.service.user;
 
-import com.mkierzkowski.vboard_back.dto.model.user.RegisterInstitutionUserDto;
+import com.mkierzkowski.vboard_back.dto.request.signup.InstitutionUserSignupRequestDto;
 
 public interface InstitutionUserService {
-    RegisterInstitutionUserDto signup(RegisterInstitutionUserDto registerInstitutionUserDto);
+    void signup(InstitutionUserSignupRequestDto institutionUserSignupRequestDto);
 }

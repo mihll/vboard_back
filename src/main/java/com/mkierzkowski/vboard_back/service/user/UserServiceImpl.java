@@ -1,14 +1,14 @@
 package com.mkierzkowski.vboard_back.service.user;
 
-import com.mkierzkowski.vboard_back.dto.mapper.user.UserPasswordChangedMapper;
-import com.mkierzkowski.vboard_back.dto.mapper.user.VerificationMapper;
-import com.mkierzkowski.vboard_back.dto.model.user.*;
+import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordChangeRequestDto;
+import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordResetRequestDto;
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
 import com.mkierzkowski.vboard_back.model.user.User;
 import com.mkierzkowski.vboard_back.repository.UserRepository;
-import org.modelmapper.ModelMapper;
+import com.mkierzkowski.vboard_back.service.user.passwordreset.PasswordResetTokenService;
+import com.mkierzkowski.vboard_back.service.user.verification.VerificationTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.mail.SimpleMailMessage;
@@ -23,18 +23,8 @@ import java.util.UUID;
 
 @Component
 public class UserServiceImpl implements UserService {
-
-    @Autowired
-    private UserRepository userRepository;
-
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
-
-    @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
-    private PasswordResetTokenService passwordResetTokenService;
 
     @Autowired
     private JavaMailSender mailSender;
@@ -42,34 +32,37 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private Environment env;
 
-    @Transactional
-    public UserDto findUserByEmail(String email) {
-        Optional<User> user = Optional.ofNullable(userRepository.findByEmail(email));
-        if (user.isPresent()) {
-            return modelMapper.map(user.get(), UserDto.class);
-        }
-        throw exception(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, email);
-    }
+    @Autowired
+    private UserRepository userRepository;
 
+    @Autowired
+    private PasswordResetTokenService passwordResetTokenService;
+
+    @Autowired
+    private VerificationTokenService verificationTokenService;
+
+    @Override
     @Transactional
     public void deleteUser(User user) {
         userRepository.delete(user);
     }
 
     @Override
-    public VerificationDto verifyRegisteredUser(User user) {
-        user.setEnabled(true);
-        userRepository.save(user);
-        return VerificationMapper.toVerificationDto(user);
+    @Transactional
+    public void verifyUserForToken(String token) {
+        User verifiedUser = verificationTokenService.getUserForValidVerificationToken(token);
+        verifiedUser.setEnabled(true);
+        userRepository.save(verifiedUser);
     }
 
     @Override
-    public UserPasswordResetDto resetPassword(UserPasswordResetDto userPasswordResetDto) {
-        Optional<User> user = Optional.ofNullable(userRepository.findByEmail(userPasswordResetDto.getEmail()));
+    @Transactional
+    public void resetPassword(UserPasswordResetRequestDto userPasswordResetRequestDto) {
+        Optional<User> user = Optional.ofNullable(userRepository.findByEmail(userPasswordResetRequestDto.getEmail()));
         if (user.isPresent()) {
             String token = UUID.randomUUID().toString();
 
-            UserPasswordResetDto responseDto = passwordResetTokenService.createPasswordResetToken(user.get(), token);
+            passwordResetTokenService.createPasswordResetToken(user.get(), token);
 
             String recipientAddress = user.get().getEmail();
             String subject = "Reset hasła - VBoard";
@@ -82,22 +75,16 @@ public class UserServiceImpl implements UserService {
             email.setSubject(subject);
             email.setText(message + "\r\n" + "http://localhost:8080" + resetUrl);
             mailSender.send(email);
-
-            return responseDto;
+        } else {
+            throw VBoardException.throwException(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, userPasswordResetRequestDto.getEmail());
         }
-        throw exception(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, userPasswordResetDto.getEmail());
     }
 
     @Override
     @Transactional
-    public UserPasswordChangedDto changePassword(UserPasswordChangeDto userPasswordChangeDto) {
-        User user = passwordResetTokenService.getUserForValidPasswordResetToken(userPasswordChangeDto.getToken());
-        user.setPassword(bCryptPasswordEncoder.encode(userPasswordChangeDto.getNewPassword()));
+    public void changePassword(UserPasswordChangeRequestDto userPasswordChangeRequestDto, String token) {
+        User user = passwordResetTokenService.getUserForValidPasswordResetToken(token);
+        user.setPassword(bCryptPasswordEncoder.encode(userPasswordChangeRequestDto.getPassword()));
         userRepository.save(user);
-        return UserPasswordChangedMapper.toUserPasswordChangedDto(user);
-    }
-
-    private RuntimeException exception(EntityType entityType, ExceptionType exceptionType, String... args) {
-        return VBoardException.throwException(entityType, exceptionType, args);
     }
 }

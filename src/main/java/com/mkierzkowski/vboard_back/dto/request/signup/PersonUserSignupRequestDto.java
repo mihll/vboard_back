@@ -1,4 +1,4 @@
-package com.mkierzkowski.vboard_back.controller.request;
+package com.mkierzkowski.vboard_back.dto.request.signup;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
@@ -13,7 +13,17 @@ import javax.validation.constraints.NotEmpty;
 @Accessors(chain = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserPasswordChangeRequest {
+public class PersonUserSignupRequestDto {
+
+    @NotEmpty(message = "{constraints.NotEmpty.message}")
+    private String email;
+
     @NotEmpty(message = "{constraints.NotEmpty.message}")
     private String password;
+
+    @NotEmpty(message = "{constraints.NotEmpty.message}")
+    private String firstName;
+
+    @NotEmpty(message = "{constraints.NotEmpty.message}")
+    private String lastName;
 }

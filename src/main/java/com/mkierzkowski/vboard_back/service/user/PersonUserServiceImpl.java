@@ -1,7 +1,6 @@
 package com.mkierzkowski.vboard_back.service.user;
 
-import com.mkierzkowski.vboard_back.dto.mapper.user.PersonUserMapper;
-import com.mkierzkowski.vboard_back.dto.model.user.RegisterPersonUserDto;
+import com.mkierzkowski.vboard_back.dto.request.signup.PersonUserSignupRequestDto;
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
@@ -15,8 +14,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
+
 @Component
 public class PersonUserServiceImpl implements PersonUserService {
+
     @Autowired
     ApplicationEventPublisher eventPublisher;
 
@@ -30,28 +32,25 @@ public class PersonUserServiceImpl implements PersonUserService {
     private PersonUserRepository personUserRepository;
 
     @Override
-    public RegisterPersonUserDto signup(RegisterPersonUserDto registerPersonUserDto) {
-        User user = userRepository.findByEmail(registerPersonUserDto.getEmail());
+    @Transactional
+    public void signup(PersonUserSignupRequestDto personUserSignupRequestDto) {
+        User user = userRepository.findByEmail(personUserSignupRequestDto.getEmail());
         if (user == null) {
             PersonUser personUser = (PersonUser) new PersonUser()
-                    .setFirstName(registerPersonUserDto.getFirstName())
-                    .setLastName(registerPersonUserDto.getLastName())
+                    .setFirstName(personUserSignupRequestDto.getFirstName())
+                    .setLastName(personUserSignupRequestDto.getLastName())
                     .setProfileImgUrl("testProfilePicURL")
-                    .setEmail(registerPersonUserDto.getEmail())
-                    .setPassword(bCryptPasswordEncoder.encode(registerPersonUserDto.getPassword()))
+                    .setEmail(personUserSignupRequestDto.getEmail())
+                    .setPassword(bCryptPasswordEncoder.encode(personUserSignupRequestDto.getPassword()))
                     .setEnabled(false);
             PersonUser registeredPersonUser = personUserRepository.save(personUser);
             try {
                 eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredPersonUser));
             } catch (RuntimeException ex) {
-                throw exception(EntityType.USER, ExceptionType.VERIFICATION_EMAIL_ERROR);
+                throw VBoardException.throwException(EntityType.USER, ExceptionType.VERIFICATION_EMAIL_ERROR);
             }
-            return PersonUserMapper.toRegisterPersonUserDto(registeredPersonUser);
+        } else {
+            throw VBoardException.throwException(EntityType.USER, ExceptionType.DUPLICATE_ENTITY, personUserSignupRequestDto.getEmail());
         }
-        throw exception(EntityType.USER, ExceptionType.DUPLICATE_ENTITY, registerPersonUserDto.getEmail());
-    }
-
-    private RuntimeException exception(EntityType entityType, ExceptionType exceptionType, String... args) {
-        return VBoardException.throwException(entityType, exceptionType, args);
     }
 }

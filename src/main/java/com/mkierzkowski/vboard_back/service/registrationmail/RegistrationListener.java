@@ -1,6 +1,7 @@
 package com.mkierzkowski.vboard_back.service.registrationmail;
 
 import com.mkierzkowski.vboard_back.model.user.User;
+import com.mkierzkowski.vboard_back.service.user.verification.VerificationTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.env.Environment;
@@ -13,14 +14,15 @@ import java.util.UUID;
 
 @Component
 public class RegistrationListener implements ApplicationListener<OnRegistrationCompleteEvent> {
-    @Autowired
-    private VerificationTokenService verificationTokenService;
 
     @Autowired
     private JavaMailSender mailSender;
 
     @Autowired
     private Environment env;
+
+    @Autowired
+    private VerificationTokenService verificationTokenService;
 
     @Override
     public void onApplicationEvent(OnRegistrationCompleteEvent event) {

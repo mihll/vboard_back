@@ -16,8 +16,12 @@ import lombok.experimental.Accessors;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserDto {
+
     private String email;
+
     private String password;
+
     private String profileImgUrl;
+
     private Boolean enabled;
 }

@@ -3,9 +3,9 @@ package com.mkierzkowski.vboard_back.scheduledtasks;
 import com.mkierzkowski.vboard_back.model.user.PasswordResetToken;
 import com.mkierzkowski.vboard_back.model.user.User;
 import com.mkierzkowski.vboard_back.model.user.VerificationToken;
-import com.mkierzkowski.vboard_back.service.registrationmail.VerificationTokenService;
-import com.mkierzkowski.vboard_back.service.user.PasswordResetTokenService;
 import com.mkierzkowski.vboard_back.service.user.UserService;
+import com.mkierzkowski.vboard_back.service.user.passwordreset.PasswordResetTokenService;
+import com.mkierzkowski.vboard_back.service.user.verification.VerificationTokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class ScheduledTasks {
+
     private static final Logger log = LoggerFactory.getLogger(ScheduledTasks.class);
 
     @Autowired

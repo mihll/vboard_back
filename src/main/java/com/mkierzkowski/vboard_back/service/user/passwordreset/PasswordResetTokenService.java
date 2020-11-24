@@ -1,15 +1,15 @@
-package com.mkierzkowski.vboard_back.service.user;
+package com.mkierzkowski.vboard_back.service.user.passwordreset;
 
-import com.mkierzkowski.vboard_back.dto.model.user.UserPasswordResetDto;
 import com.mkierzkowski.vboard_back.model.user.PasswordResetToken;
 import com.mkierzkowski.vboard_back.model.user.User;
 
 public interface PasswordResetTokenService {
-    Iterable<PasswordResetToken> getAllPasswordResetTokens();
+
+    void createPasswordResetToken(User user, String token);
 
     void deletePasswordResetToken(PasswordResetToken passwordResetToken);
 
-    UserPasswordResetDto createPasswordResetToken(User user, String token);
+    Iterable<PasswordResetToken> getAllPasswordResetTokens();
 
     User getUserForValidPasswordResetToken(String token);
 

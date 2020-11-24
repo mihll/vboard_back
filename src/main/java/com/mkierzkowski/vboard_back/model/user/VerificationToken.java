@@ -15,6 +15,7 @@ import java.util.Date;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class VerificationToken {
+
     static final int EXPIRATION = 60 * 24;
 
     @Id

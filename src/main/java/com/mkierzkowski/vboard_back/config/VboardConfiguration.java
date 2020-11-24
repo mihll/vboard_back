@@ -18,6 +18,7 @@ import java.util.List;
 
 @Configuration
 public class VboardConfiguration {
+
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();

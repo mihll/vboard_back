@@ -19,6 +19,7 @@ import javax.validation.constraints.NotNull;
 @RequestMapping("/")
 @Api(value = "vboard-application")
 public class FakeController {
+
     @ApiOperation("Login")
     @PostMapping("/login")
     public void fakeLogin(@RequestBody @Valid LoginRequest loginRequest) {

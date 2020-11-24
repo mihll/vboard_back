@@ -1,7 +1,6 @@
 package com.mkierzkowski.vboard_back.service.user;
 
-import com.mkierzkowski.vboard_back.dto.mapper.user.InstitutionUserMapper;
-import com.mkierzkowski.vboard_back.dto.model.user.RegisterInstitutionUserDto;
+import com.mkierzkowski.vboard_back.dto.request.signup.InstitutionUserSignupRequestDto;
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
@@ -15,8 +14,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
+
 @Component
 public class InstitutionUserServiceImpl implements InstitutionUserService {
+
     @Autowired
     ApplicationEventPublisher eventPublisher;
 
@@ -30,27 +32,24 @@ public class InstitutionUserServiceImpl implements InstitutionUserService {
     private InstitutionUserRepository institutionUserRepository;
 
     @Override
-    public RegisterInstitutionUserDto signup(RegisterInstitutionUserDto registerInstitutionUserDto) {
-        User user = userRepository.findByEmail(registerInstitutionUserDto.getEmail());
+    @Transactional
+    public void signup(InstitutionUserSignupRequestDto institutionUserSignupRequestDto) {
+        User user = userRepository.findByEmail(institutionUserSignupRequestDto.getEmail());
         if (user == null) {
             InstitutionUser institutionUser = (InstitutionUser) new InstitutionUser()
-                    .setInstitutionName(registerInstitutionUserDto.getInstitutionName())
+                    .setInstitutionName(institutionUserSignupRequestDto.getInstitutionName())
                     .setProfileImgUrl("testProfilePicInstURL")
-                    .setEmail(registerInstitutionUserDto.getEmail())
-                    .setPassword(bCryptPasswordEncoder.encode(registerInstitutionUserDto.getPassword()))
+                    .setEmail(institutionUserSignupRequestDto.getEmail())
+                    .setPassword(bCryptPasswordEncoder.encode(institutionUserSignupRequestDto.getPassword()))
                     .setEnabled(false);
             InstitutionUser registeredInstitutionUser = institutionUserRepository.save(institutionUser);
             try {
                 eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredInstitutionUser));
             } catch (RuntimeException ex) {
-                throw exception(EntityType.USER, ExceptionType.VERIFICATION_EMAIL_ERROR);
+                throw VBoardException.throwException(EntityType.USER, ExceptionType.VERIFICATION_EMAIL_ERROR);
             }
-            return InstitutionUserMapper.toRegisterInstitutionUserDto(registeredInstitutionUser);
+        } else {
+            throw VBoardException.throwException(EntityType.USER, ExceptionType.DUPLICATE_ENTITY, institutionUserSignupRequestDto.getEmail());
         }
-        throw exception(EntityType.USER, ExceptionType.DUPLICATE_ENTITY, registerInstitutionUserDto.getEmail());
-    }
-
-    private RuntimeException exception(EntityType entityType, ExceptionType exceptionType, String... args) {
-        return VBoardException.throwException(entityType, exceptionType, args);
     }
 }
