@@ -11,6 +11,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.servlet.FilterChain;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -51,8 +52,20 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             Authentication auth) {
         String token = JWT.create()
                 .withSubject(((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .sign(HMAC512(SECRET.getBytes()));
-        res.addHeader(HEADER_STRING, TOKEN_PREFIX + token);
+                .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
+                .sign(HMAC512(ACCESS_TOKEN_SECRET.getBytes()));
+
+        String refreshToken = JWT.create()
+                .withSubject(((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getUsername())
+                .withExpiresAt(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME))
+                .sign(HMAC512(REFRESH_TOKEN_SECRET.getBytes()));
+
+        Cookie cookie = new Cookie("refreshToken", refreshToken);
+        cookie.setMaxAge(14 * 24 * 60 * 60); // 14 days
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+
+        res.addHeader(HEADER_STRING, ACCESS_TOKEN_PREFIX + token);
+        res.addCookie(cookie);
     }
 }
