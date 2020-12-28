@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 
 @Getter
@@ -16,5 +17,6 @@ import javax.validation.constraints.NotEmpty;
 public class UserPasswordResetRequestDto {
 
     @NotEmpty(message = "{constraints.NotEmpty.message}")
+    @Email
     private String email;
 }
