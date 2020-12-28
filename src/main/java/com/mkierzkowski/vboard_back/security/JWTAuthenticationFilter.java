@@ -50,7 +50,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             HttpServletResponse res,
                                             FilterChain chain,
                                             Authentication auth) {
-        String token = JWT.create()
+        String accessToken = JWT.create()
                 .withSubject(((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
                 .sign(HMAC512(ACCESS_TOKEN_SECRET.getBytes()));
@@ -63,9 +63,9 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Cookie cookie = new Cookie("refreshToken", refreshToken);
         cookie.setMaxAge(14 * 24 * 60 * 60); // 14 days
         cookie.setHttpOnly(true);
-        cookie.setPath("/");
+        cookie.setPath("/refresh");
 
-        res.addHeader(HEADER_STRING, ACCESS_TOKEN_PREFIX + token);
+        res.addHeader(HEADER_STRING, ACCESS_TOKEN_PREFIX + accessToken);
         res.addCookie(cookie);
     }
 }

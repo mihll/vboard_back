@@ -57,6 +57,12 @@ public class Response<T> {
         return response;
     }
 
+    public static <T> Response<T> invalidToken() {
+        Response<T> response = new Response<>();
+        response.setStatus(Status.INVALID);
+        return response;
+    }
+
     public void addErrorMsgToResponse(String errorMsg, Exception ex) {
         ResponseError error = new ResponseError()
                 .setDetails(errorMsg)
@@ -66,6 +72,6 @@ public class Response<T> {
     }
 
     public enum Status {
-        OK, NOT_FOUND, DUPLICATE_ENTITY, VERIFICATION_EMAIL_ERROR, EXPIRED, NOT_VERIFIED
+        OK, NOT_FOUND, DUPLICATE_ENTITY, VERIFICATION_EMAIL_ERROR, EXPIRED, NOT_VERIFIED, INVALID
     }
 }

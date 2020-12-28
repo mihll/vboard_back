@@ -43,6 +43,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers("/user/signup/**").permitAll()
                 .antMatchers("/user/resetPassword").permitAll()
                 .antMatchers("/user/changePassword").permitAll()
+                .antMatchers("/refresh").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling()

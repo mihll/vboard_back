@@ -52,4 +52,12 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         response.addErrorMsgToResponse(ex.getMessage(), ex);
         return new ResponseEntity(response, HttpStatus.UNAUTHORIZED);
     }
+
+    @SuppressWarnings("rawtypes, unchecked")
+    @ExceptionHandler(VBoardException.InvalidTokenException.class)
+    public final ResponseEntity handleInvalidTokenException(Exception ex, WebRequest request) {
+        Response response = Response.invalidToken();
+        response.addErrorMsgToResponse(ex.getMessage(), ex);
+        return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
+    }
 }

@@ -5,7 +5,8 @@ public enum ExceptionType {
     DUPLICATE_ENTITY("duplicate"),
     VERIFICATION_EMAIL_ERROR("verification.email.error"),
     NOT_VERIFIED("not.verified"),
-    EXPIRED("expired");
+    EXPIRED("expired"),
+    INVALID("invalid");
 
     String value;
 
