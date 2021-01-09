@@ -3,6 +3,7 @@ package com.mkierzkowski.vboard_back.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.mkierzkowski.vboard_back.dto.response.refresh.RefreshResponseDto;
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
@@ -16,7 +17,7 @@ import static com.mkierzkowski.vboard_back.security.SecurityConstants.*;
 @Component
 public class RefreshTokenService {
 
-    public String getNewAccessToken(String refreshToken) {
+    public RefreshResponseDto getNewAccessToken(String refreshToken) {
         try {
             String subject = JWT.require(Algorithm.HMAC512(REFRESH_TOKEN_SECRET.getBytes()))
                     .build()
@@ -24,10 +25,13 @@ public class RefreshTokenService {
                     .getSubject();
 
             if (subject != null) {
-                return JWT.create()
+                RefreshResponseDto refreshResponseDto = new RefreshResponseDto();
+                refreshResponseDto.setAccessToken(JWT.create()
                         .withSubject(subject)
                         .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
-                        .sign(HMAC512(ACCESS_TOKEN_SECRET.getBytes()));
+                        .sign(HMAC512(ACCESS_TOKEN_SECRET.getBytes()))
+                );
+                return refreshResponseDto;
             }
         } catch (JWTVerificationException ex) {
             throw VBoardException.throwException(EntityType.REFRESH_TOKEN, ExceptionType.INVALID);

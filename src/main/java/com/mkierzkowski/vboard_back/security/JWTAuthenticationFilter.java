@@ -2,6 +2,7 @@ package com.mkierzkowski.vboard_back.security;
 
 import com.auth0.jwt.JWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mkierzkowski.vboard_back.dto.response.login.LoginResponseDto;
 import com.mkierzkowski.vboard_back.model.user.User;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,16 +50,23 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest req,
                                             HttpServletResponse res,
                                             FilterChain chain,
-                                            Authentication auth) {
+                                            Authentication auth) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        String userEmail = ((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getUsername();
+
         String accessToken = JWT.create()
-                .withSubject(((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getUsername())
+                .withSubject(userEmail)
                 .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
                 .sign(HMAC512(ACCESS_TOKEN_SECRET.getBytes()));
 
         String refreshToken = JWT.create()
-                .withSubject(((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getUsername())
+                .withSubject(userEmail)
                 .withExpiresAt(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME))
                 .sign(HMAC512(REFRESH_TOKEN_SECRET.getBytes()));
+
+        LoginResponseDto loginResponseDto = new LoginResponseDto();
+        loginResponseDto.setAccessToken(accessToken);
 
         Cookie cookie = new Cookie("refreshToken", refreshToken);
         cookie.setMaxAge(14 * 24 * 60 * 60); // 14 days
@@ -66,6 +74,9 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         cookie.setPath("/refresh");
 
         res.addHeader(HEADER_STRING, ACCESS_TOKEN_PREFIX + accessToken);
+        res.setContentType("application/json");
+        res.setCharacterEncoding("UTF-8");
+        res.getWriter().write(mapper.writeValueAsString(loginResponseDto));
         res.addCookie(cookie);
     }
 }

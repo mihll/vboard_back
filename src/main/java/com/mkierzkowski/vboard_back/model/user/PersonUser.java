@@ -7,10 +7,12 @@ import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import java.util.Date;
 
 @Entity
+@Table(name = "person_users")
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)

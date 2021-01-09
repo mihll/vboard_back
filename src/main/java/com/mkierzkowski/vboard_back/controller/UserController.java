@@ -12,6 +12,8 @@ import com.mkierzkowski.vboard_back.service.user.verification.VerificationTokenS
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -62,6 +64,19 @@ public class UserController {
     @PostMapping("/changePassword")
     public Response changePassword(@RequestBody @Valid UserPasswordChangeRequestDto userPasswordChangeRequestDto, @RequestParam("token") String token) {
         userService.changePassword(userPasswordChangeRequestDto, token);
+        return Response.ok();
+    }
+
+    @SuppressWarnings("rawtypes")
+    @PostMapping("/logout")
+    public Response logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setMaxAge(0); // setting cookie age to 0 to delete it from client
+        cookie.setHttpOnly(true);
+        cookie.setPath("/refresh");
+
+        response.addCookie(cookie);
+
         return Response.ok();
     }
 }

@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 @Entity
+@Table(name = "password_reset_tokens")
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -24,7 +25,6 @@ public class PasswordResetToken {
 
     String token;
 
-    @SuppressWarnings("JpaDataSourceORMInspection")
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_id")
     User user;

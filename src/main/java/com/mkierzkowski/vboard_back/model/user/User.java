@@ -10,6 +10,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Entity
+@Table(name = "all_users_shared",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "email")
+        })
 @Data
 @Accessors(chain = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -18,7 +22,7 @@ public class User {
 
     @Id
     @GeneratedValue
-    Long id;
+    Long user_id;
 
     @NotBlank
     String email;
@@ -31,4 +35,11 @@ public class User {
 
     @NotNull
     boolean enabled;
+
+    public String getName() {
+        if (this instanceof PersonUser)
+            return ((PersonUser) this).getFirstName() + " " + ((PersonUser) this).getLastName();
+        else return ((InstitutionUser) this).getInstitutionName();
+    }
+
 }

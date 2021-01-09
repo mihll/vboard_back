@@ -43,6 +43,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public User findUserByEmail(String email) {
+        Optional<User> user = Optional.ofNullable(userRepository.findByEmail(email));
+        if (user.isPresent()) {
+            return user.get();
+        }
+        throw VBoardException.throwException(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, email);
+    }
+
+    @Override
+    @Transactional
     public void deleteUser(User user) {
         userRepository.delete(user);
     }
@@ -66,14 +76,14 @@ public class UserServiceImpl implements UserService {
 
             String recipientAddress = user.get().getEmail();
             String subject = "Reset hasła - VBoard";
-            String resetUrl = "/user/changePassword?token=" + token;
+            String resetUrl = "/changePassword?token=" + token;
             String message = "Zresetuj swoje hasło, klikając w poniższy link:";
 
             SimpleMailMessage email = new SimpleMailMessage();
             email.setFrom(Objects.requireNonNull(env.getProperty("MAIL_USERNAME")));
             email.setTo(recipientAddress);
             email.setSubject(subject);
-            email.setText(message + "\r\n" + "http://localhost:8080" + resetUrl);
+            email.setText(message + "\r\n" + "http://localhost:4200" + resetUrl);
             mailSender.send(email);
         } else {
             throw VBoardException.throwException(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, userPasswordResetRequestDto.getEmail());

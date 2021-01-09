@@ -36,14 +36,14 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
 
         String recipientAddress = user.getEmail();
         String subject = "Potwierdzenie rejestracji - VBoard";
-        String confirmationUrl = "/user/signup/confirm?token=" + token;
+        String confirmationUrl = "/confirmSignup?token=" + token;
         String message = "Potwierdź swój adres email, klikając w poniższy link:";
 
         SimpleMailMessage email = new SimpleMailMessage();
         email.setFrom(Objects.requireNonNull(env.getProperty("MAIL_USERNAME")));
         email.setTo(recipientAddress);
         email.setSubject(subject);
-        email.setText(message + "\r\n" + "http://localhost:8080" + confirmationUrl);
+        email.setText(message + "\r\n" + "http://localhost:4200" + confirmationUrl);
         mailSender.send(email);
     }
 }

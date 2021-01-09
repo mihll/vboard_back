@@ -6,6 +6,8 @@ import com.mkierzkowski.vboard_back.model.user.User;
 
 public interface UserService {
 
+    User findUserByEmail(String email);
+
     void deleteUser(User user);
 
     void verifyUserForToken(String token);

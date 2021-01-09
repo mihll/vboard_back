@@ -40,7 +40,7 @@ public class VboardConfiguration {
         return new Docket(DocumentationType.SWAGGER_2)
                 .groupName("VBoard")
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.mkierzkowski.vboard_back.controller.api"))
+                .apis(RequestHandlerSelectors.basePackage("com.mkierzkowski.vboard_back.controller"))
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(apiInfo())
