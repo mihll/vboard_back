@@ -85,9 +85,11 @@ public class UserServiceImpl implements UserService {
             email.setSubject(subject);
             email.setText(message + "\r\n" + "http://localhost:4200" + resetUrl);
             mailSender.send(email);
-        } else {
-            throw VBoardException.throwException(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, userPasswordResetRequestDto.getEmail());
         }
+        // uncomment if you would like to inform client that user does not exist
+        /*else {
+            throw VBoardException.throwException(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, userPasswordResetRequestDto.getEmail());
+        }*/
     }
 
     @Override
