@@ -7,6 +7,8 @@ public interface VerificationTokenService {
 
     void createVerificationToken(User user, String token);
 
+    VerificationToken getVerificationTokenForUser(User user);
+
     void deleteVerificationToken(VerificationToken verificationToken);
 
     Iterable<VerificationToken> getAllVerificationTokens();

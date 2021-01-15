@@ -22,7 +22,7 @@ public class User {
 
     @Id
     @GeneratedValue
-    Long user_id;
+    Long userId;
 
     @NotBlank
     String email;

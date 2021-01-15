@@ -17,7 +17,7 @@ import java.util.Date;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class VerificationToken {
 
-    static final int EXPIRATION = 60 * 24;
+    static final int EXPIRATION = 60 * 24; //24 hours
 
     @Id
     @GeneratedValue

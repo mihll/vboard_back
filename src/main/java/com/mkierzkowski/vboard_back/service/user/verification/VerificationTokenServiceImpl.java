@@ -31,6 +31,12 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
 
     @Override
     @Transactional
+    public VerificationToken getVerificationTokenForUser(User user) {
+        return tokenRepository.findByUser(user);
+    }
+
+    @Override
+    @Transactional
     public void deleteVerificationToken(VerificationToken verificationToken) {
         tokenRepository.delete(verificationToken);
     }
