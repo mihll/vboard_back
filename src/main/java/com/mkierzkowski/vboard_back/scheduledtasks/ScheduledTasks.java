@@ -1,8 +1,8 @@
 package com.mkierzkowski.vboard_back.scheduledtasks;
 
-import com.mkierzkowski.vboard_back.model.user.PasswordResetToken;
+import com.mkierzkowski.vboard_back.model.token.PasswordResetToken;
+import com.mkierzkowski.vboard_back.model.token.VerificationToken;
 import com.mkierzkowski.vboard_back.model.user.User;
-import com.mkierzkowski.vboard_back.model.user.VerificationToken;
 import com.mkierzkowski.vboard_back.service.user.UserService;
 import com.mkierzkowski.vboard_back.service.user.passwordreset.PasswordResetTokenService;
 import com.mkierzkowski.vboard_back.service.user.verification.VerificationTokenService;

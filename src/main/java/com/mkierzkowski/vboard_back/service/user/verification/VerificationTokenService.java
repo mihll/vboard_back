@@ -1,7 +1,7 @@
 package com.mkierzkowski.vboard_back.service.user.verification;
 
+import com.mkierzkowski.vboard_back.model.token.VerificationToken;
 import com.mkierzkowski.vboard_back.model.user.User;
-import com.mkierzkowski.vboard_back.model.user.VerificationToken;
 
 public interface VerificationTokenService {
 

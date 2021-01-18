@@ -12,11 +12,11 @@ import com.mkierzkowski.vboard_back.service.registrationmail.OnRegistrationCompl
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 
-@Component
+@Service
 public class InstitutionUserServiceImpl implements InstitutionUserService {
 
     @Autowired

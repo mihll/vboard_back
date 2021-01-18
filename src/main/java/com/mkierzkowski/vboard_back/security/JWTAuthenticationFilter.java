@@ -55,20 +55,22 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             Authentication auth) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
 
-        String userEmail = ((org.springframework.security.core.userdetails.User) auth.getPrincipal()).getUsername();
+        User authenticatedUser = (User) auth.getPrincipal();
 
         String accessToken = JWT.create()
-                .withSubject(userEmail)
+                .withSubject(authenticatedUser.getEmail())
                 .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
                 .sign(HMAC512(ACCESS_TOKEN_SECRET.getBytes()));
 
         String refreshToken = JWT.create()
-                .withSubject(userEmail)
+                .withSubject(authenticatedUser.getEmail())
                 .withExpiresAt(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME))
                 .sign(HMAC512(REFRESH_TOKEN_SECRET.getBytes()));
 
-        LoginResponseDto loginResponseDto = new LoginResponseDto();
-        loginResponseDto.setAccessToken(accessToken);
+        LoginResponseDto loginResponseDto = new LoginResponseDto()
+                .setAccessToken(accessToken)
+                .setName(authenticatedUser.getName())
+                .setProfileImgUrl(authenticatedUser.getProfileImgUrl());
 
         Cookie cookie = new Cookie("refreshToken", refreshToken);
         cookie.setMaxAge(14 * 24 * 60 * 60); // 14 days

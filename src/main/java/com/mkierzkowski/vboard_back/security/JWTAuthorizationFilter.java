@@ -3,6 +3,7 @@ package com.mkierzkowski.vboard_back.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.mkierzkowski.vboard_back.model.user.User;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,14 +14,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import static com.mkierzkowski.vboard_back.security.SecurityConstants.*;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
-    public JWTAuthorizationFilter(AuthenticationManager authenticationManager) {
+    private final AuthUserDetailsService authUserDetailsService;
+
+    public JWTAuthorizationFilter(AuthenticationManager authenticationManager, AuthUserDetailsService authUserDetailsService) {
         super(authenticationManager);
+        this.authUserDetailsService = authUserDetailsService;
     }
 
     @Override
@@ -40,13 +43,14 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
     private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
         String token = request.getHeader(HEADER_STRING);
         try {
-            String user = JWT.require(Algorithm.HMAC512(ACCESS_TOKEN_SECRET.getBytes()))
+            String userEmail = JWT.require(Algorithm.HMAC512(ACCESS_TOKEN_SECRET.getBytes()))
                     .build()
                     .verify(token.replace(ACCESS_TOKEN_PREFIX, ""))
                     .getSubject();
 
-            if (user != null) {
-                return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
+            if (userEmail != null) {
+                User user = (User) authUserDetailsService.loadUserByUsername(userEmail);
+                return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             }
             return null;
         } catch (JWTVerificationException ex) {

@@ -54,7 +54,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint((req, rsp, e) -> rsp.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage()))
                 .and()
                 .addFilter(new JWTAuthenticationFilter(authenticationManager(), customAuthenticationFailureHandler))
-                .addFilter(new JWTAuthorizationFilter(authenticationManager()))
+                .addFilter(new JWTAuthorizationFilter(authenticationManager(), userDetailsService))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 

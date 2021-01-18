@@ -7,6 +7,9 @@ import com.mkierzkowski.vboard_back.dto.response.refresh.RefreshResponseDto;
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
+import com.mkierzkowski.vboard_back.model.user.User;
+import com.mkierzkowski.vboard_back.service.user.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -16,6 +19,8 @@ import static com.mkierzkowski.vboard_back.security.SecurityConstants.*;
 
 @Component
 public class RefreshTokenService {
+    @Autowired
+    UserService userService;
 
     public RefreshResponseDto getNewAccessToken(String refreshToken) {
         try {
@@ -25,7 +30,9 @@ public class RefreshTokenService {
                     .getSubject();
 
             if (subject != null) {
+                User user = userService.findUserByEmail(subject);
                 RefreshResponseDto refreshResponseDto = new RefreshResponseDto();
+                refreshResponseDto.setName(user.getName()).setProfileImgUrl(user.getProfileImgUrl());
                 refreshResponseDto.setAccessToken(JWT.create()
                         .withSubject(subject)
                         .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))

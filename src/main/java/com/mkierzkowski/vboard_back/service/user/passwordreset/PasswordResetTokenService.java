@@ -1,6 +1,6 @@
 package com.mkierzkowski.vboard_back.service.user.passwordreset;
 
-import com.mkierzkowski.vboard_back.model.user.PasswordResetToken;
+import com.mkierzkowski.vboard_back.model.token.PasswordResetToken;
 import com.mkierzkowski.vboard_back.model.user.User;
 
 public interface PasswordResetTokenService {

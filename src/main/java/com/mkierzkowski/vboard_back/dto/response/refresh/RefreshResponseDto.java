@@ -17,4 +17,10 @@ public class RefreshResponseDto {
 
     @NotEmpty(message = "{constraints.NotEmpty.message}")
     private String accessToken;
+
+    @NotEmpty(message = "{constraints.NotEmpty.message}")
+    private String name;
+
+    @NotEmpty(message = "{constraints.NotEmpty.message}")
+    private String profileImgUrl;
 }

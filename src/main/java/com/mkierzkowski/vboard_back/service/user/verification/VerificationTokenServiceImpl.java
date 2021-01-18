@@ -3,17 +3,17 @@ package com.mkierzkowski.vboard_back.service.user.verification;
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
+import com.mkierzkowski.vboard_back.model.token.VerificationToken;
 import com.mkierzkowski.vboard_back.model.user.User;
-import com.mkierzkowski.vboard_back.model.user.VerificationToken;
 import com.mkierzkowski.vboard_back.repository.VerificationTokenRepository;
 import com.mkierzkowski.vboard_back.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Calendar;
 
-@Component
+@Service
 public class VerificationTokenServiceImpl implements VerificationTokenService {
 
     @Autowired

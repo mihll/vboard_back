@@ -3,15 +3,15 @@ package com.mkierzkowski.vboard_back.service.user.passwordreset;
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
-import com.mkierzkowski.vboard_back.model.user.PasswordResetToken;
+import com.mkierzkowski.vboard_back.model.token.PasswordResetToken;
 import com.mkierzkowski.vboard_back.model.user.User;
 import com.mkierzkowski.vboard_back.repository.PasswordResetTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
 
-@Component
+@Service
 public class PasswordResetTokenServiceImpl implements PasswordResetTokenService {
 
     @Autowired

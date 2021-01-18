@@ -1,5 +1,6 @@
-package com.mkierzkowski.vboard_back.model.user;
+package com.mkierzkowski.vboard_back.model.token;
 
+import com.mkierzkowski.vboard_back.model.user.User;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,7 +26,7 @@ public class VerificationToken {
 
     String token;
 
-    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
+    @OneToOne(targetEntity = User.class, fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "user_id")
     User user;
 

@@ -14,14 +14,14 @@ import org.springframework.core.env.Environment;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-@Component
+@Service
 public class UserServiceImpl implements UserService {
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -52,9 +52,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User findUserById(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isPresent()) {
+            return user.get();
+        }
+        throw VBoardException.throwException(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, id.toString());
+    }
+
+    @Override
     @Transactional
     public void deleteUser(User user) {
         userRepository.delete(user);
+    }
+
+    @Override
+    public User saveAndFlushUser(User user) {
+        return userRepository.saveAndFlush(user);
     }
 
     @Override
