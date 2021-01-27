@@ -20,7 +20,7 @@ public class CreateBoardRequestDto {
     Boolean isPrivate;
 
     @NotEmpty(message = "{constraints.NotEmpty.message}")
-    String name;
+    String boardName;
 
     String description;
 

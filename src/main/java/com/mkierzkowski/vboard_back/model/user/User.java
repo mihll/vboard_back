@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -13,6 +14,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -41,6 +43,9 @@ public class User implements UserDetails {
 
     @NotNull
     boolean enabled;
+
+    @CreatedDate
+    Date signupDate;
 
     @OneToMany(mappedBy = "user")
     List<BoardMember> joinedBoards = new ArrayList<>();

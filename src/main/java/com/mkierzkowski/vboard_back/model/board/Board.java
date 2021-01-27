@@ -30,7 +30,7 @@ public class Board {
     Boolean isPrivate;
 
     @NotBlank
-    String name;
+    String boardName;
 
     String description;
 

@@ -16,7 +16,7 @@ import java.util.Date;
 public class JoinedBoardInfoResponseDto {
     String boardId;
     Boolean isPrivate;
-    String name;
+    String boardName;
     String description;
     Date creationDate;
     String addressCity;

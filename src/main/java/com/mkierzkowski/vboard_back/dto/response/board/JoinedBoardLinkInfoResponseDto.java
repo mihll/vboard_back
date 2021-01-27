@@ -13,5 +13,5 @@ import lombok.experimental.Accessors;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JoinedBoardLinkInfoResponseDto {
     String boardId;
-    String name;
+    String boardName;
 }

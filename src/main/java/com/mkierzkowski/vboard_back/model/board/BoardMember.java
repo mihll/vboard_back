@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Data
@@ -27,8 +28,10 @@ public class BoardMember {
     @JoinColumn(name = "board_id", insertable = false, updatable = false)
     Board board;
 
+    @NotNull
     Boolean wantNotifications;
 
+    @NotNull
     Boolean isAdmin;
 
     public BoardMember(User user, Board board, Boolean wantNotifications, Boolean isAdmin) {
