@@ -13,7 +13,7 @@ import java.util.Date;
 @Accessors(chain = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class JoinedBoardInfoResponseDto {
+public class BoardInfoResponseDto {
     String boardId;
     Boolean isPrivate;
     String boardName;

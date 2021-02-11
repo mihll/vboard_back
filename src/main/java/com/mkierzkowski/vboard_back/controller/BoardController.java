@@ -14,6 +14,7 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("rawtypes")
 @RestController
 @RequestMapping("/board")
 public class BoardController {
@@ -33,13 +34,13 @@ public class BoardController {
     @GetMapping("/my")
     public ResponseEntity getMyBoards() {
         List<BoardMember> joinedBoards = boardService.getBoardsByToken();
-        GetMyBoardsResponseDto responseDto = new GetMyBoardsResponseDto();
+        GetBoardsResponseDto responseDto = new GetBoardsResponseDto();
 
-        responseDto.setJoinedBoards(joinedBoards
+        responseDto.setBoards(joinedBoards
                 .stream()
                 .map(boardMember -> {
                     Board currentBoard = boardMember.getBoard();
-                    return modelMapper.map(currentBoard, JoinedBoardInfoResponseDto.class);
+                    return modelMapper.map(currentBoard, BoardInfoResponseDto.class);
                 }).collect(Collectors.toList()));
 
         return ResponseEntity.ok(responseDto);
@@ -59,4 +60,17 @@ public class BoardController {
 
         return ResponseEntity.ok(responseDto);
     }
+
+    @GetMapping("/findByName")
+    public ResponseEntity findBoardsByName(@RequestParam("name") String name) {
+        List<Board> foundBoards = boardService.findPublicBoardsByName(name);
+        GetBoardsResponseDto responseDto = new GetBoardsResponseDto();
+
+        responseDto.setBoards(foundBoards
+                .stream()
+                .map(currentBoard -> modelMapper.map(currentBoard, BoardInfoResponseDto.class)).collect(Collectors.toList()));
+
+        return ResponseEntity.ok(responseDto);
+    }
+
 }

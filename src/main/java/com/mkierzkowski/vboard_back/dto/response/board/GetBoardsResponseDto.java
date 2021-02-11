@@ -13,6 +13,6 @@ import java.util.List;
 @Accessors(chain = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GetMyBoardsResponseDto {
-    List<JoinedBoardInfoResponseDto> joinedBoards;
+public class GetBoardsResponseDto {
+    List<BoardInfoResponseDto> boards;
 }

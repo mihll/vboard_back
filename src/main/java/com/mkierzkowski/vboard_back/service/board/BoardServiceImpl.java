@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BoardServiceImpl implements BoardService {
@@ -58,5 +59,11 @@ public class BoardServiceImpl implements BoardService {
         User userFormContext = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User userFromDB = userService.findUserById(userFormContext.getUserId());
         return userFromDB.getJoinedBoards();
+    }
+
+    @Override
+    public List<Board> findPublicBoardsByName(String boardNameToSearchFor) {
+        List<Board> foundBoards = boardRepository.findBoardByBoardNameContainingIgnoreCase(boardNameToSearchFor);
+        return foundBoards.stream().filter(board -> !board.getIsPrivate()).collect(Collectors.toList());
     }
 }
