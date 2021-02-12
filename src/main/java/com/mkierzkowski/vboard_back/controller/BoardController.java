@@ -1,11 +1,18 @@
 package com.mkierzkowski.vboard_back.controller;
 
 import com.mkierzkowski.vboard_back.dto.request.board.CreateBoardRequestDto;
-import com.mkierzkowski.vboard_back.dto.response.board.*;
+import com.mkierzkowski.vboard_back.dto.response.board.CreateBoardResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.info.BoardInfoResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.info.GetBoardsResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.my.GetMyBoardsResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.my.MyBoardInfoResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.my.links.GetMyBoardsLinksResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.my.links.JoinedBoardLinkInfoResponseDto;
 import com.mkierzkowski.vboard_back.model.board.Board;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import com.mkierzkowski.vboard_back.service.board.BoardService;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,13 +41,13 @@ public class BoardController {
     @GetMapping("/my")
     public ResponseEntity getMyBoards() {
         List<BoardMember> joinedBoards = boardService.getBoardsByToken();
-        GetBoardsResponseDto responseDto = new GetBoardsResponseDto();
+        GetMyBoardsResponseDto responseDto = new GetMyBoardsResponseDto();
 
         responseDto.setBoards(joinedBoards
                 .stream()
                 .map(boardMember -> {
-                    Board currentBoard = boardMember.getBoard();
-                    return modelMapper.map(currentBoard, BoardInfoResponseDto.class);
+                    modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.LOOSE);
+                    return modelMapper.map(boardMember, MyBoardInfoResponseDto.class);
                 }).collect(Collectors.toList()));
 
         return ResponseEntity.ok(responseDto);

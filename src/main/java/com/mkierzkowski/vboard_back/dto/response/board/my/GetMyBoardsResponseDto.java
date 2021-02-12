@@ -1,4 +1,4 @@
-package com.mkierzkowski.vboard_back.dto.response.board;
+package com.mkierzkowski.vboard_back.dto.response.board.my;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
@@ -13,6 +13,6 @@ import java.util.List;
 @Accessors(chain = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GetBoardsResponseDto {
-    List<BoardInfoResponseDto> boards;
+public class GetMyBoardsResponseDto {
+    List<MyBoardInfoResponseDto> boards;
 }

@@ -5,9 +5,11 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.Date;
 
 @Entity
 @Data
@@ -30,6 +32,9 @@ public class BoardMember {
 
     @NotNull
     Boolean wantNotifications;
+
+    @CreatedDate
+    Date joinDate;
 
     @NotNull
     Boolean isAdmin;

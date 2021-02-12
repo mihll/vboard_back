@@ -1,4 +1,4 @@
-package com.mkierzkowski.vboard_back.dto.response.board;
+package com.mkierzkowski.vboard_back.dto.response.board.my;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
@@ -13,7 +13,11 @@ import java.util.Date;
 @Accessors(chain = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BoardInfoResponseDto {
+public class MyBoardInfoResponseDto {
+    Boolean wantNotifications;
+    Date joinDate;
+    Boolean isAdmin;
+
     String boardId;
     Boolean isPrivate;
     String boardName;

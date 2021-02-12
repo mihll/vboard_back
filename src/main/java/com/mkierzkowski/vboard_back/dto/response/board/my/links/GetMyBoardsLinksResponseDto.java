@@ -1,4 +1,4 @@
-package com.mkierzkowski.vboard_back.dto.response.board;
+package com.mkierzkowski.vboard_back.dto.response.board.my.links;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
