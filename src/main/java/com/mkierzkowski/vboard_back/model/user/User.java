@@ -2,7 +2,8 @@ package com.mkierzkowski.vboard_back.model.user;
 
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import lombok.AccessLevel;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
@@ -22,7 +23,8 @@ import java.util.List;
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "email")
         })
-@Data
+@Getter
+@Setter
 @Accessors(chain = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -48,6 +50,7 @@ public class User implements UserDetails {
     Date signupDate;
 
     @OneToMany(mappedBy = "user")
+    @OrderColumn(name = "orderIndex")
     List<BoardMember> joinedBoards = new ArrayList<>();
 
     public String getName() {

@@ -1,5 +1,6 @@
 package com.mkierzkowski.vboard_back.controller;
 
+import com.mkierzkowski.vboard_back.dto.request.board.ChangeBoardOrderRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.board.CreateBoardRequestDto;
 import com.mkierzkowski.vboard_back.dto.response.board.CreateBoardResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.info.BoardInfoResponseDto;
@@ -8,11 +9,13 @@ import com.mkierzkowski.vboard_back.dto.response.board.my.GetMyBoardsResponseDto
 import com.mkierzkowski.vboard_back.dto.response.board.my.MyBoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.links.GetMyBoardsLinksResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.links.JoinedBoardLinkInfoResponseDto;
+import com.mkierzkowski.vboard_back.exception.EntityType;
+import com.mkierzkowski.vboard_back.exception.ExceptionType;
+import com.mkierzkowski.vboard_back.exception.VBoardException;
 import com.mkierzkowski.vboard_back.model.board.Board;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import com.mkierzkowski.vboard_back.service.board.BoardService;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +41,21 @@ public class BoardController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @PutMapping("/changeOrder")
+    public ResponseEntity changeBoardOrder(@RequestBody @Valid ChangeBoardOrderRequestDto changeBoardOrderRequestDto) {
+        List<Long> boardIds;
+        try {
+            boardIds = changeBoardOrderRequestDto.getBoardIds()
+                    .stream()
+                    .map(Long::parseLong)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw VBoardException.throwException(EntityType.BOARD_LIST, ExceptionType.INVALID, changeBoardOrderRequestDto.getBoardIds().toString());
+        }
+        boardService.changeBoardOrder(boardIds);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/my")
     public ResponseEntity getMyBoards() {
         List<BoardMember> joinedBoards = boardService.getBoardsByToken();
@@ -45,11 +63,7 @@ public class BoardController {
 
         responseDto.setBoards(joinedBoards
                 .stream()
-                .map(boardMember -> {
-                    modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.LOOSE);
-                    return modelMapper.map(boardMember, MyBoardInfoResponseDto.class);
-                }).collect(Collectors.toList()));
-
+                .map(boardMember -> modelMapper.map(boardMember, MyBoardInfoResponseDto.class)).collect(Collectors.toList()));
         return ResponseEntity.ok(responseDto);
     }
 

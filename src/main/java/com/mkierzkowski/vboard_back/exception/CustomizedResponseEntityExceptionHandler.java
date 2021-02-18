@@ -54,7 +54,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
     }
 
     @SuppressWarnings("rawtypes, unchecked")
-    @ExceptionHandler(VBoardException.InvalidTokenException.class)
+    @ExceptionHandler(VBoardException.InvalidException.class)
     public final ResponseEntity handleInvalidTokenException(Exception ex, WebRequest request) {
         Response response = Response.invalidToken();
         response.addErrorMsgToResponse(ex.getMessage(), ex);

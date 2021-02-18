@@ -17,6 +17,7 @@ public class MyBoardInfoResponseDto {
     Boolean wantNotifications;
     Date joinDate;
     Boolean isAdmin;
+    Integer orderIndex;
 
     String boardId;
     Boolean isPrivate;

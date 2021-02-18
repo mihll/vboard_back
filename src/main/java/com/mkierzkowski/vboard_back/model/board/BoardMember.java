@@ -30,6 +30,8 @@ public class BoardMember {
     @JoinColumn(name = "board_id", insertable = false, updatable = false)
     Board board;
 
+    Integer orderIndex;
+
     @NotNull
     Boolean wantNotifications;
 

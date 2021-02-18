@@ -33,7 +33,7 @@ public class VBoardException {
             case VERIFICATION_EMAIL_ERROR -> new VerificationEmailException(format(messageTemplate, args));
             case EXPIRED -> new ExpiredVerificationTokenException(format(messageTemplate, args));
             case NOT_VERIFIED -> new NotVerifiedException(format(messageTemplate, args));
-            case INVALID -> new InvalidTokenException(format(messageTemplate, args));
+            case INVALID -> new InvalidException(format(messageTemplate, args));
         };
     }
 
@@ -72,8 +72,8 @@ public class VBoardException {
         }
     }
 
-    public static class InvalidTokenException extends RuntimeException {
-        public InvalidTokenException(String message) {
+    public static class InvalidException extends RuntimeException {
+        public InvalidException(String message) {
             super(message);
         }
     }

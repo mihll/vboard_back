@@ -1,7 +1,12 @@
 package com.mkierzkowski.vboard_back.config;
 
+import com.mkierzkowski.vboard_back.dto.response.board.info.BoardInfoResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.my.MyBoardInfoResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.my.links.JoinedBoardLinkInfoResponseDto;
+import com.mkierzkowski.vboard_back.model.board.Board;
+import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.NamingConventions;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,11 +33,15 @@ public class VboardConfiguration {
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration()
-                .setFieldMatchingEnabled(true)
-                .setFieldAccessLevel(org.modelmapper.config.Configuration.AccessLevel.PRIVATE)
-                .setSourceNamingConvention(NamingConventions.JAVABEANS_MUTATOR);
+                .setAmbiguityIgnored(true)
+                .setMatchingStrategy(MatchingStrategies.LOOSE);
+        modelMapper.typeMap(BoardMember.class, MyBoardInfoResponseDto.class).addMappings(mapper ->
+                mapper.map(src -> src.getId().getBoardId(), MyBoardInfoResponseDto::setBoardId));
+        modelMapper.typeMap(Board.class, BoardInfoResponseDto.class).addMappings(mapper ->
+                mapper.map(Board::getBoardId, BoardInfoResponseDto::setBoardId));
+        modelMapper.typeMap(Board.class, JoinedBoardLinkInfoResponseDto.class).addMappings(mapper ->
+                mapper.map(Board::getBoardId, JoinedBoardLinkInfoResponseDto::setBoardId));
         return modelMapper;
-        //https://github.com/modelmapper/modelmapper/issues/212
     }
 
     @Bean

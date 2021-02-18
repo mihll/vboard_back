@@ -12,12 +12,12 @@ import com.mkierzkowski.vboard_back.repository.BoardMemberRepository;
 import com.mkierzkowski.vboard_back.repository.BoardRepository;
 import com.mkierzkowski.vboard_back.service.user.UserService;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,7 +37,9 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public CreateBoardResponseDto createBoard(CreateBoardRequestDto createBoardRequestDto) {
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STANDARD);
         Board boardToCreate = modelMapper.map(createBoardRequestDto, Board.class);
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.LOOSE);
         Optional<Board> sameNameBoard = Optional.ofNullable(boardRepository.findBoardByBoardName(boardToCreate.getBoardName()));
 
         if (sameNameBoard.isPresent()) {
@@ -52,6 +54,26 @@ public class BoardServiceImpl implements BoardService {
         boardMemberRepository.saveAndFlush(boardMember);
 
         return modelMapper.map(boardToCreate, CreateBoardResponseDto.class);
+    }
+
+    @Override
+    public void changeBoardOrder(List<Long> boardIdsInOrder) {
+        User userFormContext = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User userFromDB = userService.findUserById(userFormContext.getUserId());
+        Set<Long> receivedBoardIds = new HashSet<>(boardIdsInOrder);
+        Set<Long> userBoardIds = userFromDB.getJoinedBoards()
+                .stream()
+                .map(boardMember ->
+                        boardMember.getId().getBoardId())
+                .collect(Collectors.toSet());
+
+        if (receivedBoardIds.size() != boardIdsInOrder.size() || !receivedBoardIds.equals(userBoardIds)) {
+            throw VBoardException.throwException(EntityType.BOARD_LIST, ExceptionType.INVALID, boardIdsInOrder.toString());
+        }
+
+        userFromDB.getJoinedBoards().sort(Comparator.comparing(board -> boardIdsInOrder.indexOf(board.getId().getBoardId())));
+
+        userService.saveAndFlushUser(userFromDB);
     }
 
     @Override

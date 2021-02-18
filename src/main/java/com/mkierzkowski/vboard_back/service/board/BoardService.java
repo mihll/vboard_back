@@ -11,6 +11,8 @@ public interface BoardService {
 
     CreateBoardResponseDto createBoard(CreateBoardRequestDto createBoardRequestDto);
 
+    void changeBoardOrder(List<Long> boardIdsInOrder);
+
     List<BoardMember> getBoardsByToken();
 
     List<Board> findPublicBoardsByName(String boardNameToSearchFor);
