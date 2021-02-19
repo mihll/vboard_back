@@ -35,8 +35,10 @@ public class VboardConfiguration {
         modelMapper.getConfiguration()
                 .setAmbiguityIgnored(true)
                 .setMatchingStrategy(MatchingStrategies.LOOSE);
-        modelMapper.typeMap(BoardMember.class, MyBoardInfoResponseDto.class).addMappings(mapper ->
-                mapper.map(src -> src.getId().getBoardId(), MyBoardInfoResponseDto::setBoardId));
+        modelMapper.typeMap(BoardMember.class, MyBoardInfoResponseDto.class).addMappings(mapper -> {
+            mapper.map(src -> src.getId().getBoardId(), MyBoardInfoResponseDto::setBoardId);
+            mapper.map(src -> src.getBoard().getBoardMembers().size(), MyBoardInfoResponseDto::setBoardMembers);
+        });
         modelMapper.typeMap(Board.class, BoardInfoResponseDto.class).addMappings(mapper ->
                 mapper.map(Board::getBoardId, BoardInfoResponseDto::setBoardId));
         modelMapper.typeMap(Board.class, JoinedBoardLinkInfoResponseDto.class).addMappings(mapper ->

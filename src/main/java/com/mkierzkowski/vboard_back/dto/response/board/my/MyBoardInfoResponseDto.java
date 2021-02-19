@@ -18,6 +18,7 @@ public class MyBoardInfoResponseDto {
     Date joinDate;
     Boolean isAdmin;
     Integer orderIndex;
+    Integer boardMembers;
 
     String boardId;
     Boolean isPrivate;
