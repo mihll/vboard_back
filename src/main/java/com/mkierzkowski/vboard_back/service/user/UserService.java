@@ -10,6 +10,8 @@ public interface UserService {
 
     User findUserById(Long id);
 
+    User getCurrentUser();
+
     void deleteUser(User user);
 
     User saveAndFlushUser(User user);

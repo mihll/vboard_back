@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -58,6 +59,12 @@ public class UserServiceImpl implements UserService {
             return user.get();
         }
         throw VBoardException.throwException(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, id.toString());
+    }
+
+    @Override
+    public User getCurrentUser() {
+        User userFormContext = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return findUserById(userFormContext.getUserId());
     }
 
     @Override
