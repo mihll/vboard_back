@@ -3,8 +3,12 @@ package com.mkierzkowski.vboard_back.config;
 import com.mkierzkowski.vboard_back.dto.response.board.info.BoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.MyBoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.links.JoinedBoardLinkInfoResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.user.InstitutionUserResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.user.PersonUserResponseDto;
 import com.mkierzkowski.vboard_back.model.board.Board;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
+import com.mkierzkowski.vboard_back.model.user.InstitutionUser;
+import com.mkierzkowski.vboard_back.model.user.PersonUser;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Configuration
-public class VboardConfiguration {
+public class VBoardConfiguration {
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -43,6 +47,10 @@ public class VboardConfiguration {
                 mapper.map(Board::getBoardId, BoardInfoResponseDto::setBoardId));
         modelMapper.typeMap(Board.class, JoinedBoardLinkInfoResponseDto.class).addMappings(mapper ->
                 mapper.map(Board::getBoardId, JoinedBoardLinkInfoResponseDto::setBoardId));
+        modelMapper.typeMap(PersonUser.class, PersonUserResponseDto.class).addMappings(mapper ->
+                mapper.map(src -> "person", PersonUserResponseDto::setUserType));
+        modelMapper.typeMap(InstitutionUser.class, InstitutionUserResponseDto.class).addMappings(mapper ->
+                mapper.map(src -> "institution", InstitutionUserResponseDto::setUserType));
         return modelMapper;
     }
 

@@ -13,9 +13,8 @@ import java.util.Date;
 @Accessors(chain = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserResponseDto {
-    private String email;
-    private Date signupDate;
-    private String profileImgUrl;
-    private String userType;
+public class PersonUserResponseDto extends UserResponseDto {
+    private String firstName;
+    private String lastName;
+    private Date birthDate;
 }

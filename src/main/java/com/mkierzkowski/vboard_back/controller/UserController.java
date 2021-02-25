@@ -2,17 +2,24 @@ package com.mkierzkowski.vboard_back.controller;
 
 import com.mkierzkowski.vboard_back.dto.request.signup.InstitutionUserSignupRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.signup.PersonUserSignupRequestDto;
+import com.mkierzkowski.vboard_back.dto.request.user.AbstractUserUpdateRequestDto;
+import com.mkierzkowski.vboard_back.dto.request.user.InstitutionUserUpdateRequestDto;
+import com.mkierzkowski.vboard_back.dto.request.user.PersonUserUpdateRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordChangeRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordResetRequestDto;
 import com.mkierzkowski.vboard_back.dto.response.Response;
+import com.mkierzkowski.vboard_back.dto.response.user.InstitutionUserResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.user.PersonUserResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.user.UserResponseDto;
+import com.mkierzkowski.vboard_back.exception.EntityType;
+import com.mkierzkowski.vboard_back.exception.ExceptionType;
+import com.mkierzkowski.vboard_back.exception.VBoardException;
+import com.mkierzkowski.vboard_back.model.user.InstitutionUser;
+import com.mkierzkowski.vboard_back.model.user.PersonUser;
 import com.mkierzkowski.vboard_back.model.user.User;
-import com.mkierzkowski.vboard_back.service.user.InstitutionUserService;
-import com.mkierzkowski.vboard_back.service.user.PersonUserService;
 import com.mkierzkowski.vboard_back.service.user.UserService;
 import com.mkierzkowski.vboard_back.service.user.verification.VerificationTokenService;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,12 +37,6 @@ public class UserController {
     UserService userService;
 
     @Autowired
-    PersonUserService personUserService;
-
-    @Autowired
-    InstitutionUserService institutionUserService;
-
-    @Autowired
     VerificationTokenService verificationTokenService;
 
     @Autowired
@@ -44,21 +45,46 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity getMyDetails() {
         User currentUser = userService.getCurrentUser();
-        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STANDARD);
-        UserResponseDto responseDto = modelMapper.map(currentUser, UserResponseDto.class);
-        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.LOOSE);
+        UserResponseDto responseDto = prepareUserResponse(currentUser);
         return ResponseEntity.ok(responseDto);
     }
 
+    @PutMapping("/me")
+    public ResponseEntity updatePersonUser(@RequestBody @Valid AbstractUserUpdateRequestDto abstractUserUpdateRequestDto) {
+        User updatedUser;
+        if (abstractUserUpdateRequestDto instanceof PersonUserUpdateRequestDto) {
+            updatedUser = userService.update((PersonUserUpdateRequestDto) abstractUserUpdateRequestDto);
+        } else if (abstractUserUpdateRequestDto instanceof InstitutionUserUpdateRequestDto) {
+            updatedUser = userService.update((InstitutionUserUpdateRequestDto) abstractUserUpdateRequestDto);
+        } else {
+            throw VBoardException.throwException(EntityType.USER, ExceptionType.INVALID);
+        }
+        UserResponseDto responseDto = prepareUserResponse(updatedUser);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    private UserResponseDto prepareUserResponse(User user) {
+        UserResponseDto responseDto;
+        if (user instanceof PersonUser) {
+            responseDto = modelMapper.map(user, PersonUserResponseDto.class);
+        } else if (user instanceof InstitutionUser) {
+            responseDto = modelMapper.map(user, InstitutionUserResponseDto.class);
+        } else {
+            throw VBoardException.throwException(EntityType.USER, ExceptionType.INVALID);
+        }
+        return responseDto;
+    }
+
+    // TODO: Generalize signup endpoints
     @PostMapping("/signup/person")
     public Response signup(@RequestBody @Valid PersonUserSignupRequestDto personUserSignupRequestDto) {
-        personUserService.signup(personUserSignupRequestDto);
+        userService.signup(personUserSignupRequestDto);
         return Response.ok();
     }
 
     @PostMapping("/signup/institution")
     public Response signup(@RequestBody @Valid InstitutionUserSignupRequestDto institutionUserSignupRequestDto) {
-        institutionUserService.signup(institutionUserSignupRequestDto);
+        userService.signup(institutionUserSignupRequestDto);
         return Response.ok();
     }
 

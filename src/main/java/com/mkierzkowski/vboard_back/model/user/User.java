@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -28,6 +29,8 @@ import java.util.List;
 @Accessors(chain = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Inheritance(strategy = InheritanceType.JOINED)
+//TODO: Implement Auditable everywhere needed
+@EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails {
 
     @Id

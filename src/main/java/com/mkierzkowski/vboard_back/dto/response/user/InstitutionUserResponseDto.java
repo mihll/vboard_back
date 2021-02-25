@@ -6,16 +6,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import java.util.Date;
-
 @Getter
 @Setter
 @Accessors(chain = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserResponseDto {
-    private String email;
-    private Date signupDate;
-    private String profileImgUrl;
-    private String userType;
+public class InstitutionUserResponseDto extends UserResponseDto {
+    private String institutionName;
+    private String addressCity;
+    private String addressPostCode;
+    private String addressStreet;
 }
