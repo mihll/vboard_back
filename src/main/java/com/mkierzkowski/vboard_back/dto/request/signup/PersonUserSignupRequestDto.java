@@ -1,7 +1,6 @@
 package com.mkierzkowski.vboard_back.dto.request.signup;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.mkierzkowski.vboard_back.validation.ValidPassword;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,15 +13,7 @@ import javax.validation.constraints.NotEmpty;
 @Accessors(chain = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PersonUserSignupRequestDto {
-
-    @NotEmpty(message = "{constraints.NotEmpty.message}")
-    private String email;
-
-    @NotEmpty(message = "{constraints.NotEmpty.message}")
-    @ValidPassword
-    private String password;
-
+public class PersonUserSignupRequestDto extends AbstractUserSignupRequestDto {
     @NotEmpty(message = "{constraints.NotEmpty.message}")
     private String firstName;
 

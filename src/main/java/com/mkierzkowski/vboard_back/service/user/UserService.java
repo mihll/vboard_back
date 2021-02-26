@@ -1,24 +1,16 @@
 package com.mkierzkowski.vboard_back.service.user;
 
-import com.mkierzkowski.vboard_back.dto.request.signup.InstitutionUserSignupRequestDto;
-import com.mkierzkowski.vboard_back.dto.request.signup.PersonUserSignupRequestDto;
-import com.mkierzkowski.vboard_back.dto.request.user.InstitutionUserUpdateRequestDto;
-import com.mkierzkowski.vboard_back.dto.request.user.PersonUserUpdateRequestDto;
+import com.mkierzkowski.vboard_back.dto.request.signup.AbstractUserSignupRequestDto;
+import com.mkierzkowski.vboard_back.dto.request.user.AbstractUserUpdateRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordChangeRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordResetRequestDto;
-import com.mkierzkowski.vboard_back.model.user.InstitutionUser;
-import com.mkierzkowski.vboard_back.model.user.PersonUser;
 import com.mkierzkowski.vboard_back.model.user.User;
 
 public interface UserService {
 
-    void signup(PersonUserSignupRequestDto personUserSignupRequestDto);
+    void signup(AbstractUserSignupRequestDto userSignupRequestDto);
 
-    void signup(InstitutionUserSignupRequestDto institutionUserSignupRequestDto);
-
-    PersonUser update(PersonUserUpdateRequestDto personUserUpdateRequestDto);
-
-    InstitutionUser update(InstitutionUserUpdateRequestDto institutionUserUpdateRequestDto);
+    User update(AbstractUserUpdateRequestDto userUpdateRequestDto);
 
     User findUserByEmail(String email);
 

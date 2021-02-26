@@ -1,10 +1,7 @@
 package com.mkierzkowski.vboard_back.controller;
 
-import com.mkierzkowski.vboard_back.dto.request.signup.InstitutionUserSignupRequestDto;
-import com.mkierzkowski.vboard_back.dto.request.signup.PersonUserSignupRequestDto;
+import com.mkierzkowski.vboard_back.dto.request.signup.AbstractUserSignupRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.user.AbstractUserUpdateRequestDto;
-import com.mkierzkowski.vboard_back.dto.request.user.InstitutionUserUpdateRequestDto;
-import com.mkierzkowski.vboard_back.dto.request.user.PersonUserUpdateRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordChangeRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordResetRequestDto;
 import com.mkierzkowski.vboard_back.dto.response.Response;
@@ -50,41 +47,15 @@ public class UserController {
     }
 
     @PutMapping("/me")
-    public ResponseEntity updatePersonUser(@RequestBody @Valid AbstractUserUpdateRequestDto abstractUserUpdateRequestDto) {
-        User updatedUser;
-        if (abstractUserUpdateRequestDto instanceof PersonUserUpdateRequestDto) {
-            updatedUser = userService.update((PersonUserUpdateRequestDto) abstractUserUpdateRequestDto);
-        } else if (abstractUserUpdateRequestDto instanceof InstitutionUserUpdateRequestDto) {
-            updatedUser = userService.update((InstitutionUserUpdateRequestDto) abstractUserUpdateRequestDto);
-        } else {
-            throw VBoardException.throwException(EntityType.USER, ExceptionType.INVALID);
-        }
+    public ResponseEntity updateUser(@RequestBody @Valid AbstractUserUpdateRequestDto userUpdateRequestDto) {
+        User updatedUser = userService.update(userUpdateRequestDto);
         UserResponseDto responseDto = prepareUserResponse(updatedUser);
         return ResponseEntity.ok(responseDto);
     }
 
-    private UserResponseDto prepareUserResponse(User user) {
-        UserResponseDto responseDto;
-        if (user instanceof PersonUser) {
-            responseDto = modelMapper.map(user, PersonUserResponseDto.class);
-        } else if (user instanceof InstitutionUser) {
-            responseDto = modelMapper.map(user, InstitutionUserResponseDto.class);
-        } else {
-            throw VBoardException.throwException(EntityType.USER, ExceptionType.INVALID);
-        }
-        return responseDto;
-    }
-
-    // TODO: Generalize signup endpoints
-    @PostMapping("/signup/person")
-    public Response signup(@RequestBody @Valid PersonUserSignupRequestDto personUserSignupRequestDto) {
-        userService.signup(personUserSignupRequestDto);
-        return Response.ok();
-    }
-
-    @PostMapping("/signup/institution")
-    public Response signup(@RequestBody @Valid InstitutionUserSignupRequestDto institutionUserSignupRequestDto) {
-        userService.signup(institutionUserSignupRequestDto);
+    @PostMapping("/signup")
+    public Response signup(@RequestBody @Valid AbstractUserSignupRequestDto userSignupRequestDto) {
+        userService.signup(userSignupRequestDto);
         return Response.ok();
     }
 
@@ -116,5 +87,17 @@ public class UserController {
         response.addCookie(cookie);
 
         return Response.ok();
+    }
+
+    private UserResponseDto prepareUserResponse(User user) {
+        UserResponseDto responseDto;
+        if (user instanceof PersonUser) {
+            responseDto = modelMapper.map(user, PersonUserResponseDto.class);
+        } else if (user instanceof InstitutionUser) {
+            responseDto = modelMapper.map(user, InstitutionUserResponseDto.class);
+        } else {
+            throw VBoardException.throwException(EntityType.USER, ExceptionType.INVALID);
+        }
+        return responseDto;
     }
 }

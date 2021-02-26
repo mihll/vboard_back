@@ -1,7 +1,9 @@
 package com.mkierzkowski.vboard_back.service.user;
 
+import com.mkierzkowski.vboard_back.dto.request.signup.AbstractUserSignupRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.signup.InstitutionUserSignupRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.signup.PersonUserSignupRequestDto;
+import com.mkierzkowski.vboard_back.dto.request.user.AbstractUserUpdateRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.user.InstitutionUserUpdateRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.user.PersonUserUpdateRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordChangeRequestDto;
@@ -63,77 +65,67 @@ public class UserServiceImpl implements UserService {
     private VerificationTokenService verificationTokenService;
 
     @Override
-    @Transactional
-    public void signup(PersonUserSignupRequestDto personUserSignupRequestDto) {
-        User user = userRepository.findByEmail(personUserSignupRequestDto.getEmail());
+    public void signup(AbstractUserSignupRequestDto userSignupRequestDto) {
+        User user = userRepository.findByEmail(userSignupRequestDto.getEmail());
+        User registeredUser;
         if (user == null) {
-            PersonUser personUser = (PersonUser) new PersonUser()
-                    .setFirstName(personUserSignupRequestDto.getFirstName())
-                    .setLastName(personUserSignupRequestDto.getLastName())
-                    .setProfileImgUrl("testProfilePicURL")
-                    .setEmail(personUserSignupRequestDto.getEmail())
-                    .setPassword(bCryptPasswordEncoder.encode(personUserSignupRequestDto.getPassword()))
-                    .setEnabled(false);
-            PersonUser registeredPersonUser = personUserRepository.save(personUser);
+            if (userSignupRequestDto instanceof PersonUserSignupRequestDto) {
+                PersonUserSignupRequestDto personUserSignupRequestDto = (PersonUserSignupRequestDto) userSignupRequestDto;
+                PersonUser personUser = (PersonUser) new PersonUser()
+                        .setFirstName(personUserSignupRequestDto.getFirstName())
+                        .setLastName(personUserSignupRequestDto.getLastName())
+                        .setProfileImgUrl("testProfilePicURL")
+                        .setEmail(personUserSignupRequestDto.getEmail())
+                        .setPassword(bCryptPasswordEncoder.encode(personUserSignupRequestDto.getPassword()))
+                        .setEnabled(false);
+                registeredUser = personUserRepository.save(personUser);
+            } else if (userSignupRequestDto instanceof InstitutionUserSignupRequestDto) {
+                InstitutionUserSignupRequestDto institutionUserSignupRequestDto = (InstitutionUserSignupRequestDto) userSignupRequestDto;
+                InstitutionUser institutionUser = (InstitutionUser) new InstitutionUser()
+                        .setInstitutionName(institutionUserSignupRequestDto.getInstitutionName())
+                        .setProfileImgUrl("testProfilePicInstURL")
+                        .setEmail(institutionUserSignupRequestDto.getEmail())
+                        .setPassword(bCryptPasswordEncoder.encode(institutionUserSignupRequestDto.getPassword()))
+                        .setEnabled(false);
+                registeredUser = institutionUserRepository.save(institutionUser);
+            } else {
+                throw VBoardException.throwException(EntityType.USER, ExceptionType.INVALID, userSignupRequestDto.toString());
+            }
+
             try {
-                eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredPersonUser));
+                eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredUser));
             } catch (RuntimeException ex) {
                 throw VBoardException.throwException(EntityType.USER, ExceptionType.VERIFICATION_EMAIL_ERROR);
             }
+
         } else {
-            throw VBoardException.throwException(EntityType.USER, ExceptionType.DUPLICATE_ENTITY, personUserSignupRequestDto.getEmail());
+            throw VBoardException.throwException(EntityType.USER, ExceptionType.DUPLICATE_ENTITY, userSignupRequestDto.getEmail());
         }
     }
 
     @Override
-    @Transactional
-    public void signup(InstitutionUserSignupRequestDto institutionUserSignupRequestDto) {
-        User user = userRepository.findByEmail(institutionUserSignupRequestDto.getEmail());
-        if (user == null) {
-            InstitutionUser institutionUser = (InstitutionUser) new InstitutionUser()
-                    .setInstitutionName(institutionUserSignupRequestDto.getInstitutionName())
-                    .setProfileImgUrl("testProfilePicInstURL")
-                    .setEmail(institutionUserSignupRequestDto.getEmail())
-                    .setPassword(bCryptPasswordEncoder.encode(institutionUserSignupRequestDto.getPassword()))
-                    .setEnabled(false);
-            InstitutionUser registeredInstitutionUser = institutionUserRepository.save(institutionUser);
-            try {
-                eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredInstitutionUser));
-            } catch (RuntimeException ex) {
-                throw VBoardException.throwException(EntityType.USER, ExceptionType.VERIFICATION_EMAIL_ERROR);
-            }
+    public User update(AbstractUserUpdateRequestDto userUpdateRequestDto) {
+        User currentUser = getCurrentUser();
+        if (currentUser instanceof PersonUser && userUpdateRequestDto instanceof PersonUserUpdateRequestDto) {
+            PersonUser currentPersonUser = (PersonUser) currentUser;
+            PersonUserUpdateRequestDto personUserUpdateRequestDto = (PersonUserUpdateRequestDto) userUpdateRequestDto;
+            currentPersonUser.setFirstName(personUserUpdateRequestDto.getFirstName());
+            currentPersonUser.setLastName(personUserUpdateRequestDto.getLastName());
+            currentPersonUser.setBirthDate(personUserUpdateRequestDto.getBirthDate());
+
+            return userRepository.saveAndFlush(currentPersonUser);
+        } else if (currentUser instanceof InstitutionUser && userUpdateRequestDto instanceof InstitutionUserUpdateRequestDto) {
+            InstitutionUser currentInstitutionUser = (InstitutionUser) currentUser;
+            InstitutionUserUpdateRequestDto institutionUserUpdateRequestDto = (InstitutionUserUpdateRequestDto) userUpdateRequestDto;
+            currentInstitutionUser.setInstitutionName(institutionUserUpdateRequestDto.getInstitutionName());
+            currentInstitutionUser.setAddressCity(institutionUserUpdateRequestDto.getAddressCity());
+            currentInstitutionUser.setAddressPostCode(institutionUserUpdateRequestDto.getAddressPostCode());
+            currentInstitutionUser.setAddressStreet(institutionUserUpdateRequestDto.getAddressStreet());
+
+            return userRepository.saveAndFlush(currentInstitutionUser);
         } else {
-            throw VBoardException.throwException(EntityType.USER, ExceptionType.DUPLICATE_ENTITY, institutionUserSignupRequestDto.getEmail());
+            throw VBoardException.throwException(EntityType.USER, ExceptionType.INVALID, userUpdateRequestDto.toString());
         }
-    }
-
-    @Override
-    public PersonUser update(PersonUserUpdateRequestDto personUserUpdateRequestDto) {
-        User currentUser = getCurrentUser();
-        if (!(currentUser instanceof PersonUser)) {
-            throw VBoardException.throwException(EntityType.USER, ExceptionType.INVALID, personUserUpdateRequestDto.toString());
-        }
-        PersonUser currentPersonUser = (PersonUser) currentUser;
-        currentPersonUser.setFirstName(personUserUpdateRequestDto.getFirstName());
-        currentPersonUser.setLastName(personUserUpdateRequestDto.getLastName());
-        currentPersonUser.setBirthDate(personUserUpdateRequestDto.getBirthDate());
-
-        return userRepository.saveAndFlush(currentPersonUser);
-    }
-
-    @Override
-    public InstitutionUser update(InstitutionUserUpdateRequestDto institutionUserUpdateRequestDto) {
-        User currentUser = getCurrentUser();
-        if (!(currentUser instanceof InstitutionUser)) {
-            throw VBoardException.throwException(EntityType.USER, ExceptionType.INVALID, institutionUserUpdateRequestDto.toString());
-        }
-        InstitutionUser currentInstitutionUser = (InstitutionUser) currentUser;
-        currentInstitutionUser.setInstitutionName(institutionUserUpdateRequestDto.getInstitutionName());
-        currentInstitutionUser.setAddressCity(institutionUserUpdateRequestDto.getAddressCity());
-        currentInstitutionUser.setAddressPostCode(institutionUserUpdateRequestDto.getAddressPostCode());
-        currentInstitutionUser.setAddressStreet(institutionUserUpdateRequestDto.getAddressStreet());
-
-        return userRepository.saveAndFlush(currentInstitutionUser);
     }
 
     @Override
