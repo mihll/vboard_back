@@ -15,8 +15,11 @@ import javax.validation.constraints.NotEmpty;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserPasswordChangeRequestDto {
-
     @NotEmpty(message = "{constraints.NotEmpty.message}")
     @ValidPassword
-    private String password;
+    private String newPassword;
+
+    private String currentPassword;
+
+    private String token;
 }

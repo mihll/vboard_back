@@ -72,8 +72,8 @@ public class UserController {
     }
 
     @PostMapping("/changePassword")
-    public Response changePassword(@RequestBody @Valid UserPasswordChangeRequestDto userPasswordChangeRequestDto, @RequestParam("token") String token) {
-        userService.changePassword(userPasswordChangeRequestDto, token);
+    public Response changePassword(@RequestBody @Valid UserPasswordChangeRequestDto userPasswordChangeRequestDto) {
+        userService.changePassword(userPasswordChangeRequestDto);
         return Response.ok();
     }
 

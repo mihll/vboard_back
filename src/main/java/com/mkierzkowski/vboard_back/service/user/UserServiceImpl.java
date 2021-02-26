@@ -48,7 +48,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private Environment env;
 
-
     @Autowired
     private UserRepository userRepository;
 
@@ -89,7 +88,7 @@ public class UserServiceImpl implements UserService {
                         .setEnabled(false);
                 registeredUser = institutionUserRepository.save(institutionUser);
             } else {
-                throw VBoardException.throwException(EntityType.USER, ExceptionType.INVALID, userSignupRequestDto.toString());
+                throw VBoardException.throwException(EntityType.REQUEST, ExceptionType.INVALID);
             }
 
             try {
@@ -124,7 +123,7 @@ public class UserServiceImpl implements UserService {
 
             return userRepository.saveAndFlush(currentInstitutionUser);
         } else {
-            throw VBoardException.throwException(EntityType.USER, ExceptionType.INVALID, userUpdateRequestDto.toString());
+            throw VBoardException.throwException(EntityType.REQUEST, ExceptionType.INVALID);
         }
     }
 
@@ -201,9 +200,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void changePassword(UserPasswordChangeRequestDto userPasswordChangeRequestDto, String token) {
-        User user = passwordResetTokenService.getUserForValidPasswordResetToken(token);
-        user.setPassword(bCryptPasswordEncoder.encode(userPasswordChangeRequestDto.getPassword()));
-        userRepository.save(user);
+    public void changePassword(UserPasswordChangeRequestDto userPasswordChangeRequestDto) {
+        User currentUser;
+        if (userPasswordChangeRequestDto.getToken() != null && !userPasswordChangeRequestDto.getToken().isEmpty()) {
+            currentUser = passwordResetTokenService.getUserForValidPasswordResetToken(userPasswordChangeRequestDto.getToken());
+            currentUser.setPassword(bCryptPasswordEncoder.encode(userPasswordChangeRequestDto.getNewPassword()));
+        } else if (userPasswordChangeRequestDto.getCurrentPassword() != null && !userPasswordChangeRequestDto.getCurrentPassword().isEmpty()) {
+            currentUser = getCurrentUser();
+            if (bCryptPasswordEncoder.matches(userPasswordChangeRequestDto.getCurrentPassword(), currentUser.getPassword())) {
+                currentUser.setPassword(bCryptPasswordEncoder.encode(userPasswordChangeRequestDto.getNewPassword()));
+            } else {
+                throw VBoardException.throwException(EntityType.CURRENT_PASSWORD, ExceptionType.INVALID);
+            }
+        } else {
+            throw VBoardException.throwException(EntityType.REQUEST, ExceptionType.INVALID);
+        }
+        userRepository.save(currentUser);
     }
 }

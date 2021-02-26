@@ -26,5 +26,5 @@ public interface UserService {
 
     void resetPassword(UserPasswordResetRequestDto userPasswordResetRequestDto);
 
-    void changePassword(UserPasswordChangeRequestDto UserPasswordChangeRequestDto, String token);
+    void changePassword(UserPasswordChangeRequestDto UserPasswordChangeRequestDto);
 }
