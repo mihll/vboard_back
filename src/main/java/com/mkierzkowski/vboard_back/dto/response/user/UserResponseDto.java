@@ -16,6 +16,6 @@ import java.util.Date;
 public class UserResponseDto {
     private String email;
     private Date signupDate;
-    private String profileImgUrl;
+    private String profilePicUrl;
     private String userType;
 }

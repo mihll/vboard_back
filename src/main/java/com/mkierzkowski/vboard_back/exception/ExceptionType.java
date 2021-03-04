@@ -6,7 +6,8 @@ public enum ExceptionType {
     VERIFICATION_EMAIL_ERROR("verification.email.error"),
     NOT_VERIFIED("not.verified"),
     EXPIRED("expired"),
-    INVALID("invalid");
+    INVALID("invalid"),
+    FAILED("operation.failed");
 
     String value;
 

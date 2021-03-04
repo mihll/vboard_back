@@ -22,5 +22,5 @@ public class RefreshResponseDto {
     private String name;
 
     @NotEmpty(message = "{constraints.NotEmpty.message}")
-    private String profileImgUrl;
+    private String profilePicUrl;
 }

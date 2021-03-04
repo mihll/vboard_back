@@ -8,5 +8,7 @@ public enum EntityType {
     VERIFICATION_TOKEN,
     PASSWORD_RESET_TOKEN,
     REFRESH_TOKEN,
-    REQUEST
+    REQUEST,
+    PROFILE_PIC,
+    FILE
 }

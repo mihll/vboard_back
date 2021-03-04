@@ -70,7 +70,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         LoginResponseDto loginResponseDto = new LoginResponseDto()
                 .setAccessToken(accessToken)
                 .setName(authenticatedUser.getName())
-                .setProfileImgUrl(authenticatedUser.getProfileImgUrl());
+                .setProfilePicUrl(authenticatedUser.getProfilePicUrl());
 
         Cookie cookie = new Cookie("refreshToken", refreshToken);
         cookie.setMaxAge(14 * 24 * 60 * 60); // 14 days

@@ -5,12 +5,15 @@ import com.mkierzkowski.vboard_back.dto.request.user.AbstractUserUpdateRequestDt
 import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordChangeRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordResetRequestDto;
 import com.mkierzkowski.vboard_back.model.user.User;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
 
     void signup(AbstractUserSignupRequestDto userSignupRequestDto);
 
     User update(AbstractUserUpdateRequestDto userUpdateRequestDto);
+
+    User changeProfilePic(MultipartFile profilePic);
 
     User findUserByEmail(String email);
 

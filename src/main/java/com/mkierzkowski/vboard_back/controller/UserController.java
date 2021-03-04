@@ -20,6 +20,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -49,6 +50,13 @@ public class UserController {
     @PutMapping("/me")
     public ResponseEntity updateUser(@RequestBody @Valid AbstractUserUpdateRequestDto userUpdateRequestDto) {
         User updatedUser = userService.update(userUpdateRequestDto);
+        UserResponseDto responseDto = prepareUserResponse(updatedUser);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @PostMapping("/changeProfilePic")
+    public ResponseEntity changeProfilePic(@RequestParam(value = "profilePic") MultipartFile profilePic) {
+        User updatedUser = userService.changeProfilePic(profilePic);
         UserResponseDto responseDto = prepareUserResponse(updatedUser);
         return ResponseEntity.ok(responseDto);
     }

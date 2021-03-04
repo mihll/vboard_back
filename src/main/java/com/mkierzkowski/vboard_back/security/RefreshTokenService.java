@@ -32,7 +32,9 @@ public class RefreshTokenService {
             if (subject != null) {
                 User user = userService.findUserByEmail(subject);
                 RefreshResponseDto refreshResponseDto = new RefreshResponseDto();
-                refreshResponseDto.setName(user.getName()).setProfileImgUrl(user.getProfileImgUrl());
+
+                refreshResponseDto.setProfilePicUrl(user.getProfilePicUrl());
+                refreshResponseDto.setName(user.getName());
                 refreshResponseDto.setAccessToken(JWT.create()
                         .withSubject(subject)
                         .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))

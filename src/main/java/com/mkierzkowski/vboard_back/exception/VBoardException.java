@@ -34,6 +34,7 @@ public class VBoardException {
             case EXPIRED -> new ExpiredVerificationTokenException(format(messageTemplate, args));
             case NOT_VERIFIED -> new NotVerifiedException(format(messageTemplate, args));
             case INVALID -> new InvalidException(format(messageTemplate, args));
+            case FAILED -> new OperationFailedException(format(messageTemplate, args));
         };
     }
 
@@ -74,6 +75,12 @@ public class VBoardException {
 
     public static class InvalidException extends RuntimeException {
         public InvalidException(String message) {
+            super(message);
+        }
+    }
+
+    public static class OperationFailedException extends RuntimeException {
+        public OperationFailedException(String message) {
             super(message);
         }
     }

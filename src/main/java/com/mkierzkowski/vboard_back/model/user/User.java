@@ -10,6 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -44,7 +45,7 @@ public class User implements UserDetails {
     String password;
 
     @NotBlank
-    String profileImgUrl;
+    String profilePicFilename;
 
     @NotNull
     boolean enabled;
@@ -60,6 +61,13 @@ public class User implements UserDetails {
         if (this instanceof PersonUser)
             return ((PersonUser) this).getFirstName() + " " + ((PersonUser) this).getLastName();
         else return ((InstitutionUser) this).getInstitutionName();
+    }
+
+    public String getProfilePicUrl() {
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/resource/profilePic/")
+                .path(this.getProfilePicFilename())
+                .toUriString();
     }
 
     @Override

@@ -18,6 +18,7 @@ import com.mkierzkowski.vboard_back.repository.InstitutionUserRepository;
 import com.mkierzkowski.vboard_back.repository.PersonUserRepository;
 import com.mkierzkowski.vboard_back.repository.UserRepository;
 import com.mkierzkowski.vboard_back.service.registrationmail.OnRegistrationCompleteEvent;
+import com.mkierzkowski.vboard_back.service.storage.StorageService;
 import com.mkierzkowski.vboard_back.service.user.passwordreset.PasswordResetTokenService;
 import com.mkierzkowski.vboard_back.service.user.verification.VerificationTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +29,21 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
 import javax.transaction.Transactional;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.mkierzkowski.vboard_back.service.storage.RelativePaths.PROFILE_PICS;
+
 @Service
 public class UserServiceImpl implements UserService {
+
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -63,6 +71,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private VerificationTokenService verificationTokenService;
 
+    @Autowired
+    private StorageService storageService;
+
     @Override
     public void signup(AbstractUserSignupRequestDto userSignupRequestDto) {
         User user = userRepository.findByEmail(userSignupRequestDto.getEmail());
@@ -73,7 +84,7 @@ public class UserServiceImpl implements UserService {
                 PersonUser personUser = (PersonUser) new PersonUser()
                         .setFirstName(personUserSignupRequestDto.getFirstName())
                         .setLastName(personUserSignupRequestDto.getLastName())
-                        .setProfileImgUrl("testProfilePicURL")
+                        .setProfilePicFilename("defaultPersonProfilePic.jpg")
                         .setEmail(personUserSignupRequestDto.getEmail())
                         .setPassword(bCryptPasswordEncoder.encode(personUserSignupRequestDto.getPassword()))
                         .setEnabled(false);
@@ -82,7 +93,7 @@ public class UserServiceImpl implements UserService {
                 InstitutionUserSignupRequestDto institutionUserSignupRequestDto = (InstitutionUserSignupRequestDto) userSignupRequestDto;
                 InstitutionUser institutionUser = (InstitutionUser) new InstitutionUser()
                         .setInstitutionName(institutionUserSignupRequestDto.getInstitutionName())
-                        .setProfileImgUrl("testProfilePicInstURL")
+                        .setProfilePicFilename("defaultInstitutionProfilePic.jpg")
                         .setEmail(institutionUserSignupRequestDto.getEmail())
                         .setPassword(bCryptPasswordEncoder.encode(institutionUserSignupRequestDto.getPassword()))
                         .setEnabled(false);
@@ -125,6 +136,49 @@ public class UserServiceImpl implements UserService {
         } else {
             throw VBoardException.throwException(EntityType.REQUEST, ExceptionType.INVALID);
         }
+    }
+
+    @Override
+    public User changeProfilePic(MultipartFile profilePic) {
+
+        // if profilePic is empty, user wants to reset profile picture to default
+        if (profilePic.isEmpty()) {
+            User currentUser = getCurrentUser();
+            if (currentUser.getProfilePicFilename().startsWith("default")) {
+                throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "You profile picture is already the default one");
+            }
+            storageService.delete(currentUser.getProfilePicFilename(), PROFILE_PICS.getPath());
+            if (currentUser instanceof PersonUser) {
+                currentUser.setProfilePicFilename("defaultPersonProfilePic.jpg");
+            } else if (currentUser instanceof InstitutionUser) {
+                currentUser.setProfilePicFilename("defaultInstitutionProfilePic.jpg");
+            }
+            return userRepository.save(currentUser);
+        }
+
+        if (!Objects.equals(profilePic.getContentType(), "image/jpeg")) {
+            throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "File is in invalid format (only JPEGs are allowed)");
+        }
+
+        try {
+            BufferedImage image = ImageIO.read(profilePic.getInputStream());
+            if (image != null) {
+                if (image.getWidth() != 200 || image.getHeight() != 200) {
+                    throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "File is in wrong size (should be 200x200 pixels)");
+                }
+            } else {
+                throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "File is not an image");
+            }
+
+        } catch (IOException e) {
+            throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "File is empty");
+        }
+
+        String filename = storageService.store(profilePic, UUID.randomUUID().toString() + ".jpg", PROFILE_PICS.getPath());
+
+        User currentUser = getCurrentUser();
+        currentUser.setProfilePicFilename(filename);
+        return userRepository.save(currentUser);
     }
 
     @Override
