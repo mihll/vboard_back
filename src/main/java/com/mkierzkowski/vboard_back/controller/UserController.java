@@ -55,7 +55,7 @@ public class UserController {
     }
 
     @PostMapping("/changeProfilePic")
-    public ResponseEntity changeProfilePic(@RequestParam(value = "profilePic") MultipartFile profilePic) {
+    public ResponseEntity changeProfilePic(@RequestParam(value = "profilePic", required = false) MultipartFile profilePic) {
         User updatedUser = userService.changeProfilePic(profilePic);
         UserResponseDto responseDto = prepareUserResponse(updatedUser);
         return ResponseEntity.ok(responseDto);

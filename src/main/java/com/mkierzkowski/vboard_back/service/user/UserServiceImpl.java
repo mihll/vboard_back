@@ -141,8 +141,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public User changeProfilePic(MultipartFile profilePic) {
 
-        // if profilePic is empty, user wants to reset profile picture to default
-        if (profilePic.isEmpty()) {
+        // if profilePic is null, user wants to reset profile picture to default
+        if (profilePic == null) {
             User currentUser = getCurrentUser();
             if (currentUser.getProfilePicFilename().startsWith("default")) {
                 throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "You profile picture is already the default one");
