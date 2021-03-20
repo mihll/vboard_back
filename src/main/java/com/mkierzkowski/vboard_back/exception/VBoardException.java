@@ -30,7 +30,7 @@ public class VBoardException {
         return switch (exceptionType) {
             case ENTITY_NOT_FOUND -> new EntityNotFoundException(format(messageTemplate, args));
             case DUPLICATE_ENTITY -> new DuplicateEntityException(format(messageTemplate, args));
-            case VERIFICATION_EMAIL_ERROR -> new VerificationEmailException(format(messageTemplate, args));
+            case EMAIL_ERROR -> new VerificationEmailException(format(messageTemplate, args));
             case EXPIRED -> new ExpiredVerificationTokenException(format(messageTemplate, args));
             case NOT_VERIFIED -> new NotVerifiedException(format(messageTemplate, args));
             case INVALID -> new InvalidException(format(messageTemplate, args));
@@ -40,7 +40,7 @@ public class VBoardException {
 
     private static String format(String template, String... args) {
         Optional<String> templateContent = Optional.ofNullable(customPropertiesConfig.getConfigValue(template));
-        return templateContent.map(s -> MessageFormat.format(s, (Object[]) args)).orElseGet(() -> String.format(template, (Object[]) args));
+        return templateContent.map(s -> MessageFormat.format(template + " " + s, (Object[]) args)).orElseGet(() -> String.format(template, (Object[]) args));
     }
 
     public static class EntityNotFoundException extends RuntimeException {

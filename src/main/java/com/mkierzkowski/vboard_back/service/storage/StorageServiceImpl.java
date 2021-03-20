@@ -56,17 +56,6 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public void delete(String filename, String relativePath) {
-        Path pathToDelete = rootLocation.resolve(relativePath);
-
-        try {
-            Files.delete(pathToDelete.resolve(filename));
-        } catch (IOException e) {
-            throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.FAILED);
-        }
-    }
-
-    @Override
     public Resource loadAsResource(String filename, String relativePath) {
         try {
             Path file = load(filename, relativePath);
@@ -78,6 +67,17 @@ public class StorageServiceImpl implements StorageService {
             }
         } catch (MalformedURLException e) {
             throw VBoardException.throwException(EntityType.FILE, ExceptionType.ENTITY_NOT_FOUND, filename);
+        }
+    }
+
+    @Override
+    public void delete(String filename, String relativePath) {
+        Path pathToDelete = rootLocation.resolve(relativePath);
+
+        try {
+            Files.delete(pathToDelete.resolve(filename));
+        } catch (IOException e) {
+            throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.FAILED);
         }
     }
 }

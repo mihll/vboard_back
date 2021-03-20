@@ -21,6 +21,5 @@ public class BoardMemberKey implements Serializable {
         this.boardId = boardId;
     }
 
-    public BoardMemberKey() {
-    }
+    public BoardMemberKey() { }
 }

@@ -13,6 +13,9 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ApplicationEventMulticaster;
+import org.springframework.context.event.SimpleApplicationEventMulticaster;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
@@ -28,6 +31,15 @@ import java.util.List;
 @Configuration
 public class VBoardConfiguration {
 
+    @Bean(name = "applicationEventMulticaster")
+    public ApplicationEventMulticaster simpleApplicationEventMulticaster() {
+        SimpleApplicationEventMulticaster eventMulticaster =
+                new SimpleApplicationEventMulticaster();
+
+        eventMulticaster.setTaskExecutor(new SimpleAsyncTaskExecutor());
+        return eventMulticaster;
+    }
+
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
@@ -39,6 +51,8 @@ public class VBoardConfiguration {
         modelMapper.getConfiguration()
                 .setAmbiguityIgnored(true)
                 .setMatchingStrategy(MatchingStrategies.LOOSE);
+
+        //custom mappings
         modelMapper.typeMap(BoardMember.class, MyBoardInfoResponseDto.class).addMappings(mapper -> {
             mapper.map(src -> src.getId().getBoardId(), MyBoardInfoResponseDto::setBoardId);
             mapper.map(src -> src.getBoard().getBoardMembers().size(), MyBoardInfoResponseDto::setBoardMembers);
@@ -51,6 +65,7 @@ public class VBoardConfiguration {
                 mapper.map(src -> "person", PersonUserResponseDto::setUserType));
         modelMapper.typeMap(InstitutionUser.class, InstitutionUserResponseDto.class).addMappings(mapper ->
                 mapper.map(src -> "institution", InstitutionUserResponseDto::setUserType));
+
         return modelMapper;
     }
 

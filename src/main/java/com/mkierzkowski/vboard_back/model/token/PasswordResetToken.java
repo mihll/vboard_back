@@ -1,8 +1,10 @@
 package com.mkierzkowski.vboard_back.model.token;
 
+import com.mkierzkowski.vboard_back.config.auditing.Auditable;
 import com.mkierzkowski.vboard_back.model.user.User;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
@@ -11,12 +13,13 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "password_reset_tokens")
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PasswordResetToken {
+public class PasswordResetToken extends Auditable<String> {
 
     static final int EXPIRATION = 60 * 24;
 

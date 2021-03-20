@@ -12,7 +12,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.Optional;
 
 @Service
@@ -25,21 +24,19 @@ public class AuthUserDetailsService implements UserDetailsService {
     private VerificationTokenService verificationTokenService;
 
     @Override
-    @Transactional
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Optional<User> user = Optional.ofNullable(userRepository.findByEmail(email));
-        if (user.isPresent()) {
-            Optional<VerificationToken> verificationToken = Optional.ofNullable(verificationTokenService.getVerificationTokenForUser(user.get()));
-            if (user.get().isEnabled()) {
-                return user.get();
-                //TODO Catch following exceptions
-            } else if (verificationToken.isPresent()) {
-                throw new DisabledException("User is not verified");
-            } else {
-                throw new LockedException("User is blocked");
-            }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("user with email " + email + " does not exist."));
+
+        Optional<VerificationToken> verificationToken = verificationTokenService.getVerificationTokenForUser(user);
+
+        if (user.isEnabled()) {
+            return user;
+        } else if (verificationToken.isPresent()) {
+            throw new DisabledException("User is not verified");
         } else {
-            throw new UsernameNotFoundException("user with email " + email + " does not exist.");
+            throw new LockedException("User is blocked");
         }
+
     }
 }

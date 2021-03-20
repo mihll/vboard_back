@@ -4,7 +4,6 @@ import com.mkierzkowski.vboard_back.dto.request.signup.AbstractUserSignupRequest
 import com.mkierzkowski.vboard_back.dto.request.user.AbstractUserUpdateRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordChangeRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordResetRequestDto;
-import com.mkierzkowski.vboard_back.dto.response.Response;
 import com.mkierzkowski.vboard_back.dto.response.user.InstitutionUserResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.user.PersonUserResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.user.UserResponseDto;
@@ -26,7 +25,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-@SuppressWarnings("rawtypes")
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -41,52 +39,52 @@ public class UserController {
     ModelMapper modelMapper;
 
     @GetMapping("/me")
-    public ResponseEntity getMyDetails() {
+    public ResponseEntity<UserResponseDto> getMyDetails() {
         User currentUser = userService.getCurrentUser();
         UserResponseDto responseDto = prepareUserResponse(currentUser);
         return ResponseEntity.ok(responseDto);
     }
 
     @PutMapping("/me")
-    public ResponseEntity updateUser(@RequestBody @Valid AbstractUserUpdateRequestDto userUpdateRequestDto) {
+    public ResponseEntity<UserResponseDto> updateUser(@RequestBody @Valid AbstractUserUpdateRequestDto userUpdateRequestDto) {
         User updatedUser = userService.update(userUpdateRequestDto);
         UserResponseDto responseDto = prepareUserResponse(updatedUser);
         return ResponseEntity.ok(responseDto);
     }
 
     @PostMapping("/changeProfilePic")
-    public ResponseEntity changeProfilePic(@RequestParam(value = "profilePic", required = false) MultipartFile profilePic) {
+    public ResponseEntity<UserResponseDto> changeProfilePic(@RequestParam(value = "profilePic", required = false) MultipartFile profilePic) {
         User updatedUser = userService.changeProfilePic(profilePic);
         UserResponseDto responseDto = prepareUserResponse(updatedUser);
         return ResponseEntity.ok(responseDto);
     }
 
     @PostMapping("/signup")
-    public Response signup(@RequestBody @Valid AbstractUserSignupRequestDto userSignupRequestDto) {
+    public ResponseEntity<?> signup(@RequestBody @Valid AbstractUserSignupRequestDto userSignupRequestDto) {
         userService.signup(userSignupRequestDto);
-        return Response.ok();
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/signup/confirm")
-    public Response confirm(@RequestParam("token") String token) {
+    public ResponseEntity<?> confirm(@RequestParam("token") String token) {
         userService.verifyUserForToken(token);
-        return Response.ok();
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/resetPassword")
-    public Response resetPassword(@RequestBody @Valid UserPasswordResetRequestDto userPasswordResetRequestDto) {
+    public ResponseEntity<?> resetPassword(@RequestBody @Valid UserPasswordResetRequestDto userPasswordResetRequestDto) {
         userService.resetPassword(userPasswordResetRequestDto);
-        return Response.ok();
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/changePassword")
-    public Response changePassword(@RequestBody @Valid UserPasswordChangeRequestDto userPasswordChangeRequestDto) {
+    public ResponseEntity<?> changePassword(@RequestBody @Valid UserPasswordChangeRequestDto userPasswordChangeRequestDto) {
         userService.changePassword(userPasswordChangeRequestDto);
-        return Response.ok();
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/logout")
-    public Response logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletResponse response) {
         Cookie cookie = new Cookie("refreshToken", null);
         cookie.setMaxAge(0); // setting cookie age to 0 to delete it from client
         cookie.setHttpOnly(true);
@@ -94,7 +92,7 @@ public class UserController {
 
         response.addCookie(cookie);
 
-        return Response.ok();
+        return ResponseEntity.ok().build();
     }
 
     private UserResponseDto prepareUserResponse(User user) {

@@ -21,15 +21,16 @@ public class RefreshController {
     @Autowired
     private RefreshTokenService refreshTokenService;
 
-    @SuppressWarnings("rawtypes")
     @PostMapping
-    public ResponseEntity refreshUserToken(@CookieValue(value = "refreshToken", required = false) String refreshToken, HttpServletResponse response) {
+    public ResponseEntity<RefreshResponseDto> refreshUserToken(@CookieValue(value = "refreshToken", required = false) String refreshToken, HttpServletResponse response) {
+
         if (refreshToken == null) {
             return ResponseEntity.status(401).build();
         }
-        RefreshResponseDto refreshResponseDto = refreshTokenService.getNewAccessToken(refreshToken);
 
+        RefreshResponseDto refreshResponseDto = refreshTokenService.getNewAccessToken(refreshToken);
         response.addHeader(HEADER_STRING, ACCESS_TOKEN_PREFIX + refreshResponseDto.getAccessToken());
+
         return ResponseEntity.ok(refreshResponseDto);
     }
 }

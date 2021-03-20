@@ -15,6 +15,8 @@ public interface UserService {
 
     User changeProfilePic(MultipartFile profilePic);
 
+    User resetProfilePicToDefault();
+
     User findUserByEmail(String email);
 
     User findUserById(Long id);

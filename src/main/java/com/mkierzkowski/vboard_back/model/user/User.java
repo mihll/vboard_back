@@ -1,12 +1,12 @@
 package com.mkierzkowski.vboard_back.model.user;
 
+import com.mkierzkowski.vboard_back.config.auditing.Auditable;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "all_users_shared",
+@Table(name = "users_shared",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "email")
         })
@@ -30,9 +30,8 @@ import java.util.List;
 @Accessors(chain = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Inheritance(strategy = InheritanceType.JOINED)
-//TODO: Implement Auditable everywhere needed
 @EntityListeners(AuditingEntityListener.class)
-public class User implements UserDetails {
+public class User extends Auditable<String> implements UserDetails {
 
     @Id
     @GeneratedValue
@@ -50,9 +49,6 @@ public class User implements UserDetails {
     @NotNull
     boolean enabled;
 
-    @CreatedDate
-    Date signupDate;
-
     @OneToMany(mappedBy = "user")
     @OrderColumn(name = "orderIndex")
     List<BoardMember> joinedBoards = new ArrayList<>();
@@ -68,6 +64,10 @@ public class User implements UserDetails {
                 .path("/resource/profilePic/")
                 .path(this.getProfilePicFilename())
                 .toUriString();
+    }
+
+    public Date getSignupDate() {
+        return this.getCreatedDate();
     }
 
     @Override

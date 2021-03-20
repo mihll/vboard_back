@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Calendar;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class VerificationTokenServiceImpl implements VerificationTokenService {
@@ -24,14 +26,15 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
 
     @Override
     @Transactional
-    public void createVerificationToken(User user, String token) {
+    public VerificationToken createVerificationToken(User user) {
+        String token = UUID.randomUUID().toString();
         VerificationToken myToken = new VerificationToken(token, user);
-        tokenRepository.save(myToken);
+        return tokenRepository.save(myToken);
     }
 
     @Override
     @Transactional
-    public VerificationToken getVerificationTokenForUser(User user) {
+    public Optional<VerificationToken> getVerificationTokenForUser(User user) {
         return tokenRepository.findByUser(user);
     }
 
@@ -48,18 +51,20 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
 
     @Override
     public User getUserForValidVerificationToken(String token) {
-        VerificationToken verificationToken = tokenRepository.findByToken(token);
-        if (verificationToken == null) {
-            throw VBoardException.throwException(EntityType.VERIFICATION_TOKEN, ExceptionType.ENTITY_NOT_FOUND, token);
-        }
+        VerificationToken verificationToken = tokenRepository.findByToken(token)
+                                                      .orElseThrow(() -> VBoardException.throwException(EntityType.VERIFICATION_TOKEN, ExceptionType.ENTITY_NOT_FOUND, token));
+
         User user = verificationToken.getUser();
         Calendar cal = Calendar.getInstance();
+
         if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
             tokenRepository.delete(verificationToken);
             userService.deleteUser(user);
             throw VBoardException.throwException(EntityType.VERIFICATION_TOKEN, ExceptionType.EXPIRED, token);
         }
+
         tokenRepository.delete(verificationToken);
+
         return user;
     }
 }

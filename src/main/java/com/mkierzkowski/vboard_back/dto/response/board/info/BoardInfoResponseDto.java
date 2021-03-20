@@ -4,13 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 
 import java.util.Date;
 
 @Getter
 @Setter
-@Accessors(chain = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BoardInfoResponseDto {
@@ -18,7 +16,7 @@ public class BoardInfoResponseDto {
     Boolean isPrivate;
     String boardName;
     String description;
-    Date creationDate;
+    Date createdDate;
     String addressCity;
     String addressPostCode;
     String addressStreet;

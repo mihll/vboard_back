@@ -19,6 +19,7 @@ import static com.mkierzkowski.vboard_back.security.SecurityConstants.*;
 
 @Component
 public class RefreshTokenService {
+
     @Autowired
     UserService userService;
 

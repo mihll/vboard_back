@@ -11,21 +11,21 @@ import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordResetRe
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
+import com.mkierzkowski.vboard_back.model.token.PasswordResetToken;
+import com.mkierzkowski.vboard_back.model.token.VerificationToken;
 import com.mkierzkowski.vboard_back.model.user.InstitutionUser;
 import com.mkierzkowski.vboard_back.model.user.PersonUser;
 import com.mkierzkowski.vboard_back.model.user.User;
 import com.mkierzkowski.vboard_back.repository.InstitutionUserRepository;
 import com.mkierzkowski.vboard_back.repository.PersonUserRepository;
 import com.mkierzkowski.vboard_back.repository.UserRepository;
-import com.mkierzkowski.vboard_back.service.registrationmail.OnRegistrationCompleteEvent;
+import com.mkierzkowski.vboard_back.service.mail.OnRegistrationCompleteEvent;
+import com.mkierzkowski.vboard_back.service.mail.OnResetPasswordEvent;
 import com.mkierzkowski.vboard_back.service.storage.StorageService;
 import com.mkierzkowski.vboard_back.service.user.passwordreset.PasswordResetTokenService;
 import com.mkierzkowski.vboard_back.service.user.verification.VerificationTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.core.env.Environment;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,13 +48,7 @@ public class UserServiceImpl implements UserService {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    private JavaMailSender mailSender;
-
-    @Autowired
     private ApplicationEventPublisher eventPublisher;
-
-    @Autowired
-    private Environment env;
 
     @Autowired
     private UserRepository userRepository;
@@ -75,47 +69,52 @@ public class UserServiceImpl implements UserService {
     private StorageService storageService;
 
     @Override
+    @Transactional
     public void signup(AbstractUserSignupRequestDto userSignupRequestDto) {
-        User user = userRepository.findByEmail(userSignupRequestDto.getEmail());
-        User registeredUser;
-        if (user == null) {
-            if (userSignupRequestDto instanceof PersonUserSignupRequestDto) {
-                PersonUserSignupRequestDto personUserSignupRequestDto = (PersonUserSignupRequestDto) userSignupRequestDto;
-                PersonUser personUser = (PersonUser) new PersonUser()
-                        .setFirstName(personUserSignupRequestDto.getFirstName())
-                        .setLastName(personUserSignupRequestDto.getLastName())
-                        .setProfilePicFilename("defaultPersonProfilePic.jpg")
-                        .setEmail(personUserSignupRequestDto.getEmail())
-                        .setPassword(bCryptPasswordEncoder.encode(personUserSignupRequestDto.getPassword()))
-                        .setEnabled(false);
-                registeredUser = personUserRepository.save(personUser);
-            } else if (userSignupRequestDto instanceof InstitutionUserSignupRequestDto) {
-                InstitutionUserSignupRequestDto institutionUserSignupRequestDto = (InstitutionUserSignupRequestDto) userSignupRequestDto;
-                InstitutionUser institutionUser = (InstitutionUser) new InstitutionUser()
-                        .setInstitutionName(institutionUserSignupRequestDto.getInstitutionName())
-                        .setProfilePicFilename("defaultInstitutionProfilePic.jpg")
-                        .setEmail(institutionUserSignupRequestDto.getEmail())
-                        .setPassword(bCryptPasswordEncoder.encode(institutionUserSignupRequestDto.getPassword()))
-                        .setEnabled(false);
-                registeredUser = institutionUserRepository.save(institutionUser);
-            } else {
-                throw VBoardException.throwException(EntityType.REQUEST, ExceptionType.INVALID);
-            }
 
-            try {
-                eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredUser));
-            } catch (RuntimeException ex) {
-                throw VBoardException.throwException(EntityType.USER, ExceptionType.VERIFICATION_EMAIL_ERROR);
-            }
-
-        } else {
+        Optional<User> existingUser = userRepository.findByEmail(userSignupRequestDto.getEmail());
+        if (existingUser.isPresent()) {
             throw VBoardException.throwException(EntityType.USER, ExceptionType.DUPLICATE_ENTITY, userSignupRequestDto.getEmail());
         }
+
+        User registeredUser;
+        if (userSignupRequestDto instanceof PersonUserSignupRequestDto) {
+            PersonUserSignupRequestDto personUserSignupRequestDto = (PersonUserSignupRequestDto) userSignupRequestDto;
+            PersonUser personUser = (PersonUser) new PersonUser()
+                    .setFirstName(personUserSignupRequestDto.getFirstName())
+                    .setLastName(personUserSignupRequestDto.getLastName())
+                    .setProfilePicFilename("defaultPersonProfilePic.jpg")
+                    .setEmail(personUserSignupRequestDto.getEmail())
+                    .setPassword(bCryptPasswordEncoder.encode(personUserSignupRequestDto.getPassword()))
+                    .setEnabled(false);
+            registeredUser = personUserRepository.save(personUser);
+        } else if (userSignupRequestDto instanceof InstitutionUserSignupRequestDto) {
+            InstitutionUserSignupRequestDto institutionUserSignupRequestDto = (InstitutionUserSignupRequestDto) userSignupRequestDto;
+            InstitutionUser institutionUser = (InstitutionUser) new InstitutionUser()
+                    .setInstitutionName(institutionUserSignupRequestDto.getInstitutionName())
+                    .setProfilePicFilename("defaultInstitutionProfilePic.jpg")
+                    .setEmail(institutionUserSignupRequestDto.getEmail())
+                    .setPassword(bCryptPasswordEncoder.encode(institutionUserSignupRequestDto.getPassword()))
+                    .setEnabled(false);
+            registeredUser = institutionUserRepository.save(institutionUser);
+        } else {
+            throw VBoardException.throwException(EntityType.REQUEST, ExceptionType.INVALID);
+        }
+
+        VerificationToken createdToken = verificationTokenService.createVerificationToken(registeredUser);
+
+        try {
+            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(createdToken));
+        } catch (RuntimeException ex) {
+            throw VBoardException.throwException(EntityType.VERIFICATION_TOKEN, ExceptionType.EMAIL_ERROR);
+        }
+
     }
 
     @Override
     public User update(AbstractUserUpdateRequestDto userUpdateRequestDto) {
         User currentUser = getCurrentUser();
+
         if (currentUser instanceof PersonUser && userUpdateRequestDto instanceof PersonUserUpdateRequestDto) {
             PersonUser currentPersonUser = (PersonUser) currentUser;
             PersonUserUpdateRequestDto personUserUpdateRequestDto = (PersonUserUpdateRequestDto) userUpdateRequestDto;
@@ -139,21 +138,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User changeProfilePic(MultipartFile profilePic) {
 
         // if profilePic is null, user wants to reset profile picture to default
         if (profilePic == null) {
-            User currentUser = getCurrentUser();
-            if (currentUser.getProfilePicFilename().startsWith("default")) {
-                throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "You profile picture is already the default one");
-            }
-            storageService.delete(currentUser.getProfilePicFilename(), PROFILE_PICS.getPath());
-            if (currentUser instanceof PersonUser) {
-                currentUser.setProfilePicFilename("defaultPersonProfilePic.jpg");
-            } else if (currentUser instanceof InstitutionUser) {
-                currentUser.setProfilePicFilename("defaultInstitutionProfilePic.jpg");
-            }
-            return userRepository.save(currentUser);
+            return resetProfilePicToDefault();
         }
 
         if (!Objects.equals(profilePic.getContentType(), "image/jpeg")) {
@@ -182,22 +172,34 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
-    public User findUserByEmail(String email) {
-        Optional<User> user = Optional.ofNullable(userRepository.findByEmail(email));
-        if (user.isPresent()) {
-            return user.get();
+    public User resetProfilePicToDefault() {
+        User currentUser = getCurrentUser();
+
+        if (currentUser.getProfilePicFilename().startsWith("default")) {
+            throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "You profile picture is already the default one");
         }
-        throw VBoardException.throwException(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, email);
+
+        storageService.delete(currentUser.getProfilePicFilename(), PROFILE_PICS.getPath());
+
+        if (currentUser instanceof PersonUser) {
+            currentUser.setProfilePicFilename("defaultPersonProfilePic.jpg");
+        } else if (currentUser instanceof InstitutionUser) {
+            currentUser.setProfilePicFilename("defaultInstitutionProfilePic.jpg");
+        }
+
+        return userRepository.save(currentUser);
+    }
+
+    @Override
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> VBoardException.throwException(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, email));
     }
 
     @Override
     public User findUserById(Long id) {
-        Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            return user.get();
-        }
-        throw VBoardException.throwException(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, id.toString());
+        return userRepository.findById(id)
+                .orElseThrow(() -> VBoardException.throwException(EntityType.USER, ExceptionType.ENTITY_NOT_FOUND, id.toString()));
     }
 
     @Override
@@ -207,7 +209,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public void deleteUser(User user) {
         userRepository.delete(user);
     }
@@ -228,23 +229,14 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void resetPassword(UserPasswordResetRequestDto userPasswordResetRequestDto) {
-        Optional<User> user = Optional.ofNullable(userRepository.findByEmail(userPasswordResetRequestDto.getEmail()));
+        Optional<User> user = userRepository.findByEmail(userPasswordResetRequestDto.getEmail());
         if (user.isPresent()) {
-            String token = UUID.randomUUID().toString();
-
-            passwordResetTokenService.createPasswordResetToken(user.get(), token);
-
-            String recipientAddress = user.get().getEmail();
-            String subject = "Reset hasła - VBoard";
-            String resetUrl = "/changePassword?token=" + token;
-            String message = "Zresetuj swoje hasło, klikając w poniższy link:";
-
-            SimpleMailMessage email = new SimpleMailMessage();
-            email.setFrom(Objects.requireNonNull(env.getProperty("MAIL_USERNAME")));
-            email.setTo(recipientAddress);
-            email.setSubject(subject);
-            email.setText(message + "\r\n" + "http://localhost:4200" + resetUrl);
-            mailSender.send(email);
+            PasswordResetToken createdToken = passwordResetTokenService.createPasswordResetToken(user.get());
+            try {
+                eventPublisher.publishEvent(new OnResetPasswordEvent(createdToken));
+            } catch (RuntimeException ex) {
+                throw VBoardException.throwException(EntityType.PASSWORD_RESET_TOKEN, ExceptionType.EMAIL_ERROR);
+            }
         }
         // uncomment if you would like to inform client that user does not exist
         /*else {
@@ -256,19 +248,27 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void changePassword(UserPasswordChangeRequestDto userPasswordChangeRequestDto) {
         User currentUser;
+
         if (userPasswordChangeRequestDto.getToken() != null && !userPasswordChangeRequestDto.getToken().isEmpty()) {
+
+            //user is changing forgotten password using token sent in email link
             currentUser = passwordResetTokenService.getUserForValidPasswordResetToken(userPasswordChangeRequestDto.getToken());
             currentUser.setPassword(bCryptPasswordEncoder.encode(userPasswordChangeRequestDto.getNewPassword()));
+
         } else if (userPasswordChangeRequestDto.getCurrentPassword() != null && !userPasswordChangeRequestDto.getCurrentPassword().isEmpty()) {
+
+            //user is changing password by using current password while being logged in
             currentUser = getCurrentUser();
             if (bCryptPasswordEncoder.matches(userPasswordChangeRequestDto.getCurrentPassword(), currentUser.getPassword())) {
                 currentUser.setPassword(bCryptPasswordEncoder.encode(userPasswordChangeRequestDto.getNewPassword()));
             } else {
                 throw VBoardException.throwException(EntityType.CURRENT_PASSWORD, ExceptionType.INVALID);
             }
+
         } else {
             throw VBoardException.throwException(EntityType.REQUEST, ExceptionType.INVALID);
         }
+
         userRepository.save(currentUser);
     }
 }

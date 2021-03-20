@@ -1,5 +1,6 @@
 package com.mkierzkowski.vboard_back.model.token;
 
+import com.mkierzkowski.vboard_back.config.auditing.Auditable;
 import com.mkierzkowski.vboard_back.model.user.User;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -16,7 +17,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class VerificationToken {
+public class VerificationToken extends Auditable<String> {
 
     static final int EXPIRATION = 60 * 24; //24 hours
 

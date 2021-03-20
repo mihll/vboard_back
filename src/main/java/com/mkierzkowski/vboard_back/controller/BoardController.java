@@ -9,9 +9,6 @@ import com.mkierzkowski.vboard_back.dto.response.board.my.GetMyBoardsResponseDto
 import com.mkierzkowski.vboard_back.dto.response.board.my.MyBoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.links.GetMyBoardsLinksResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.links.JoinedBoardLinkInfoResponseDto;
-import com.mkierzkowski.vboard_back.exception.EntityType;
-import com.mkierzkowski.vboard_back.exception.ExceptionType;
-import com.mkierzkowski.vboard_back.exception.VBoardException;
 import com.mkierzkowski.vboard_back.model.board.Board;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import com.mkierzkowski.vboard_back.service.board.BoardService;
@@ -24,7 +21,6 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("rawtypes")
 @RestController
 @RequestMapping("/board")
 public class BoardController {
@@ -36,40 +32,34 @@ public class BoardController {
     ModelMapper modelMapper;
 
     @PostMapping("/create")
-    public ResponseEntity createBoard(@RequestBody @Valid CreateBoardRequestDto createBoardRequestDto) {
-        CreateBoardResponseDto responseDto = boardService.createBoard(createBoardRequestDto);
+    public ResponseEntity<CreateBoardResponseDto> createBoard(@RequestBody @Valid CreateBoardRequestDto createBoardRequestDto) {
+        Board createdBoard = boardService.createBoard(createBoardRequestDto);
+        CreateBoardResponseDto responseDto = modelMapper.map(createdBoard, CreateBoardResponseDto.class);
         return ResponseEntity.ok(responseDto);
     }
 
     @PutMapping("/changeOrder")
-    public ResponseEntity changeBoardOrder(@RequestBody @Valid ChangeBoardOrderRequestDto changeBoardOrderRequestDto) {
-        List<Long> boardIds;
-        try {
-            boardIds = changeBoardOrderRequestDto.getBoardIds()
-                    .stream()
-                    .map(Long::parseLong)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            throw VBoardException.throwException(EntityType.BOARD_LIST, ExceptionType.INVALID, changeBoardOrderRequestDto.getBoardIds().toString());
-        }
-        boardService.changeBoardOrder(boardIds);
+    public ResponseEntity<?> changeBoardOrder(@RequestBody @Valid ChangeBoardOrderRequestDto changeBoardOrderRequestDto) {
+        boardService.changeBoardOrder(changeBoardOrderRequestDto);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/my")
-    public ResponseEntity getMyBoards() {
-        List<BoardMember> joinedBoards = boardService.getBoardsByToken();
+    public ResponseEntity<GetMyBoardsResponseDto> getMyBoards() {
+        List<BoardMember> joinedBoards = boardService.getBoardsOfCurrentUser();
         GetMyBoardsResponseDto responseDto = new GetMyBoardsResponseDto();
 
         responseDto.setBoards(joinedBoards
                 .stream()
-                .map(boardMember -> modelMapper.map(boardMember, MyBoardInfoResponseDto.class)).collect(Collectors.toList()));
+                .map(boardMember -> modelMapper.map(boardMember, MyBoardInfoResponseDto.class))
+                .collect(Collectors.toList()));
+
         return ResponseEntity.ok(responseDto);
     }
 
     @GetMapping("/my/links")
-    public ResponseEntity getMyBoardsLinks() {
-        List<BoardMember> joinedBoards = boardService.getBoardsByToken();
+    public ResponseEntity<GetMyBoardsLinksResponseDto> getMyBoardsLinks() {
+        List<BoardMember> joinedBoards = boardService.getBoardsOfCurrentUser();
         GetMyBoardsLinksResponseDto responseDto = new GetMyBoardsLinksResponseDto();
 
         responseDto.setBoardLinks(joinedBoards
@@ -77,21 +67,22 @@ public class BoardController {
                 .map(boardMember -> {
                     Board currentBoard = boardMember.getBoard();
                     return modelMapper.map(currentBoard, JoinedBoardLinkInfoResponseDto.class);
-                }).collect(Collectors.toList()));
+                })
+                .collect(Collectors.toList()));
 
         return ResponseEntity.ok(responseDto);
     }
 
     @GetMapping("/findByName")
-    public ResponseEntity findBoardsByName(@RequestParam("name") String name) {
+    public ResponseEntity<GetBoardsResponseDto> findBoardsByName(@RequestParam("name") String name) {
         List<Board> foundBoards = boardService.findPublicBoardsByName(name);
         GetBoardsResponseDto responseDto = new GetBoardsResponseDto();
 
         responseDto.setBoards(foundBoards
                 .stream()
-                .map(currentBoard -> modelMapper.map(currentBoard, BoardInfoResponseDto.class)).collect(Collectors.toList()));
+                .map(currentBoard -> modelMapper.map(currentBoard, BoardInfoResponseDto.class))
+                .collect(Collectors.toList()));
 
         return ResponseEntity.ok(responseDto);
     }
-
 }

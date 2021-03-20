@@ -3,11 +3,13 @@ package com.mkierzkowski.vboard_back.service.user.verification;
 import com.mkierzkowski.vboard_back.model.token.VerificationToken;
 import com.mkierzkowski.vboard_back.model.user.User;
 
+import java.util.Optional;
+
 public interface VerificationTokenService {
 
-    void createVerificationToken(User user, String token);
+    VerificationToken createVerificationToken(User user);
 
-    VerificationToken getVerificationTokenForUser(User user);
+    Optional<VerificationToken> getVerificationTokenForUser(User user);
 
     void deleteVerificationToken(VerificationToken verificationToken);
 

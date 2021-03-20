@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Getter
 @Setter
 @Accessors(chain = true)
@@ -20,12 +23,6 @@ public class Response<T> {
     private T payload;
     private Object errors;
     private Object metadata;
-
-    public static <T> Response<T> ok() {
-        Response<T> response = new Response<>();
-        response.setStatus(Status.OK);
-        return response;
-    }
 
     public static <T> Response<T> notFound() {
         Response<T> response = new Response<>();
@@ -63,12 +60,27 @@ public class Response<T> {
         return response;
     }
 
-    public void addErrorMsgToResponse(String errorMsg, Exception ex) {
-        ResponseError error = new ResponseError()
-                .setDetails(errorMsg)
-                .setMessage(ex.getMessage())
-                .setTimestamp(DateUtils.today());
+    public void addErrorMsgToResponse(Exception ex) {
+        ResponseError error = new ResponseError();
+        Map<String, String> strings = getMessageAndDetails(ex);
+        if (strings.containsKey("details")) {
+            error.setDetails(strings.get("details"));
+        }
+        error.setMessage(strings.get("message"));
+        error.setTimestamp(DateUtils.today());
         setErrors(error);
+    }
+
+    public static Map<String, String> getMessageAndDetails(Exception ex) {
+        Map<String, String> result = new HashMap<>();
+        int indexOfFirstSpace = ex.getMessage().indexOf(' ');
+        if (indexOfFirstSpace != -1) {
+            result.put("message",(ex.getMessage().substring(0, indexOfFirstSpace)));
+            result.put("details",(ex.getMessage().substring(indexOfFirstSpace + 1)));
+        } else {
+            result.put("message",(ex.getMessage()));
+        }
+        return result;
     }
 
     public enum Status {

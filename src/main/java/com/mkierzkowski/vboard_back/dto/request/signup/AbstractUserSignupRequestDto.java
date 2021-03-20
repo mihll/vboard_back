@@ -7,19 +7,18 @@ import com.mkierzkowski.vboard_back.validation.ValidPassword;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotEmpty;
 
 @Getter
 @Setter
-@Accessors(chain = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "userType")
 @JsonSubTypes({@JsonSubTypes.Type(value = PersonUserSignupRequestDto.class, name = "person"),
         @JsonSubTypes.Type(value = InstitutionUserSignupRequestDto.class, name = "institution")})
 public abstract class AbstractUserSignupRequestDto {
+
     @NotEmpty(message = "{constraints.NotEmpty.message}")
     private String email;
 

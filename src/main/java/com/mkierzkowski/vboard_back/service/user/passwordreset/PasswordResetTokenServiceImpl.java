@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
+import java.util.UUID;
 
 @Service
 public class PasswordResetTokenServiceImpl implements PasswordResetTokenService {
@@ -18,9 +19,10 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
     PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
-    public void createPasswordResetToken(User user, String token) {
+    public PasswordResetToken createPasswordResetToken(User user) {
+        String token = UUID.randomUUID().toString();
         PasswordResetToken passwordResetToken = new PasswordResetToken(token, user);
-        passwordResetTokenRepository.save(passwordResetToken);
+        return passwordResetTokenRepository.save(passwordResetToken);
     }
 
     @Override
@@ -35,17 +37,19 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
 
     @Override
     public User getUserForValidPasswordResetToken(String token) {
-        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token);
-        if (passwordResetToken == null) {
-            throw VBoardException.throwException(EntityType.PASSWORD_RESET_TOKEN, ExceptionType.ENTITY_NOT_FOUND, token);
-        }
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token)
+                                                        .orElseThrow(() -> VBoardException.throwException(EntityType.PASSWORD_RESET_TOKEN, ExceptionType.ENTITY_NOT_FOUND, token));
+
         User user = passwordResetToken.getUser();
         Calendar cal = Calendar.getInstance();
+
         if ((passwordResetToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
             passwordResetTokenRepository.delete(passwordResetToken);
             throw VBoardException.throwException(EntityType.VERIFICATION_TOKEN, ExceptionType.EXPIRED, token);
         }
+
         passwordResetTokenRepository.delete(passwordResetToken);
+
         return user;
     }
 }

@@ -24,6 +24,7 @@ import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 import static com.mkierzkowski.vboard_back.security.SecurityConstants.*;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+
     private final AuthenticationManager authenticationManager;
 
     public JWTAuthenticationFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler authenticationFailureHandler) {
@@ -73,7 +74,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .setProfilePicUrl(authenticatedUser.getProfilePicUrl());
 
         Cookie cookie = new Cookie("refreshToken", refreshToken);
-        cookie.setMaxAge(14 * 24 * 60 * 60); // 14 days
+        //TODO: Change to infinity and store refreshTokens in DB + DB check on refresh to invalidate
+        cookie.setMaxAge((int) (REFRESH_TOKEN_EXPIRATION_TIME/1000));
         cookie.setHttpOnly(true);
         cookie.setPath("/refresh");
 

@@ -5,7 +5,7 @@ import com.mkierzkowski.vboard_back.model.user.User;
 
 public interface PasswordResetTokenService {
 
-    void createPasswordResetToken(User user, String token);
+    PasswordResetToken createPasswordResetToken(User user);
 
     void deletePasswordResetToken(PasswordResetToken passwordResetToken);
 

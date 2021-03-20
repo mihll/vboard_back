@@ -18,11 +18,12 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         Map<String, Object> body = new HashMap<>();
+
         body.put("status", HttpStatus.UNAUTHORIZED.value());
         body.put("error", HttpStatus.UNAUTHORIZED.getReasonPhrase());
         body.put("message", exception.getMessage());
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
 
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.getOutputStream().println(objectMapper.writeValueAsString(body));
     }
 }

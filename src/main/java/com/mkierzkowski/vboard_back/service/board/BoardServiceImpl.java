@@ -1,7 +1,7 @@
 package com.mkierzkowski.vboard_back.service.board;
 
+import com.mkierzkowski.vboard_back.dto.request.board.ChangeBoardOrderRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.board.CreateBoardRequestDto;
-import com.mkierzkowski.vboard_back.dto.response.board.CreateBoardResponseDto;
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
@@ -14,8 +14,8 @@ import com.mkierzkowski.vboard_back.service.user.UserService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,10 +24,10 @@ import java.util.stream.Collectors;
 public class BoardServiceImpl implements BoardService {
 
     @Autowired
-    BoardRepository boardRepository;
+    UserService userService;
 
     @Autowired
-    UserService userService;
+    BoardRepository boardRepository;
 
     @Autowired
     BoardMemberRepository boardMemberRepository;
@@ -36,32 +36,44 @@ public class BoardServiceImpl implements BoardService {
     ModelMapper modelMapper;
 
     @Override
-    public CreateBoardResponseDto createBoard(CreateBoardRequestDto createBoardRequestDto) {
+    @Transactional
+    public Board createBoard(CreateBoardRequestDto createBoardRequestDto) {
+
+        Optional<Board> sameNameBoard = boardRepository.findBoardByBoardName(createBoardRequestDto.getBoardName());
+        if (sameNameBoard.isPresent()) {
+            throw VBoardException.throwException(EntityType.BOARD, ExceptionType.DUPLICATE_ENTITY, createBoardRequestDto.getBoardName());
+        }
+
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STANDARD);
         Board boardToCreate = modelMapper.map(createBoardRequestDto, Board.class);
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.LOOSE);
-        Optional<Board> sameNameBoard = Optional.ofNullable(boardRepository.findBoardByBoardName(boardToCreate.getBoardName()));
-
-        if (sameNameBoard.isPresent()) {
-            throw VBoardException.throwException(EntityType.BOARD, ExceptionType.DUPLICATE_ENTITY, boardToCreate.getBoardName());
-        }
 
         boardToCreate = boardRepository.saveAndFlush(boardToCreate);
 
-        User userFormContext = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User boardCreator = userService.findUserById(userFormContext.getUserId());
+        User boardCreator = userService.getCurrentUser();
         BoardMember boardMember = new BoardMember(boardCreator, boardToCreate, false, true);
         boardMemberRepository.saveAndFlush(boardMember);
 
-        return modelMapper.map(boardToCreate, CreateBoardResponseDto.class);
+        return boardToCreate;
     }
 
     @Override
-    public void changeBoardOrder(List<Long> boardIdsInOrder) {
-        User userFormContext = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User userFromDB = userService.findUserById(userFormContext.getUserId());
+    public void changeBoardOrder(ChangeBoardOrderRequestDto changeBoardOrderRequestDto) {
+
+        List<Long> boardIdsInOrder;
+        try {
+            boardIdsInOrder = changeBoardOrderRequestDto.getBoardIds()
+                    .stream()
+                    .map(Long::parseLong)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw VBoardException.throwException(EntityType.BOARD_LIST, ExceptionType.INVALID, changeBoardOrderRequestDto.getBoardIds().toString());
+        }
+
         Set<Long> receivedBoardIds = new HashSet<>(boardIdsInOrder);
-        Set<Long> userBoardIds = userFromDB.getJoinedBoards()
+
+        User currentUser = userService.getCurrentUser();
+        Set<Long> userBoardIds = currentUser.getJoinedBoards()
                 .stream()
                 .map(boardMember ->
                         boardMember.getId().getBoardId())
@@ -71,16 +83,15 @@ public class BoardServiceImpl implements BoardService {
             throw VBoardException.throwException(EntityType.BOARD_LIST, ExceptionType.INVALID, boardIdsInOrder.toString());
         }
 
-        userFromDB.getJoinedBoards().sort(Comparator.comparing(board -> boardIdsInOrder.indexOf(board.getId().getBoardId())));
+        currentUser.getJoinedBoards().sort(Comparator.comparing(board -> boardIdsInOrder.indexOf(board.getId().getBoardId())));
 
-        userService.saveAndFlushUser(userFromDB);
+        userService.saveAndFlushUser(currentUser);
     }
 
     @Override
-    public List<BoardMember> getBoardsByToken() {
-        User userFormContext = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User userFromDB = userService.findUserById(userFormContext.getUserId());
-        return userFromDB.getJoinedBoards();
+    public List<BoardMember> getBoardsOfCurrentUser() {
+        User currentUser = userService.getCurrentUser();
+        return currentUser.getJoinedBoards();
     }
 
     @Override

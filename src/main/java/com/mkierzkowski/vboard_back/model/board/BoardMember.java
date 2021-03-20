@@ -1,21 +1,23 @@
 package com.mkierzkowski.vboard_back.model.board;
 
+import com.mkierzkowski.vboard_back.config.auditing.Auditable;
 import com.mkierzkowski.vboard_back.model.user.User;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 @Accessors(chain = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class BoardMember {
+public class BoardMember extends Auditable<String> {
 
     @EmbeddedId
     BoardMemberKey id;
@@ -35,9 +37,6 @@ public class BoardMember {
     @NotNull
     Boolean wantNotifications;
 
-    @CreatedDate
-    Date joinDate;
-
     @NotNull
     Boolean isAdmin;
 
@@ -55,5 +54,9 @@ public class BoardMember {
 
     public BoardMember() {
 
+    }
+
+    public Date getJoinDate() {
+        return this.getCreatedDate();
     }
 }

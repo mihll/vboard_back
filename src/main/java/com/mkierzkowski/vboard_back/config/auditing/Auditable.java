@@ -14,11 +14,12 @@ import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
 import java.util.Date;
 
-@Getter(AccessLevel.PROTECTED)
+@Getter
 @Setter(AccessLevel.PROTECTED)
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public class Auditable<U> {
+
     @CreatedBy
     @Column(name = "created_by")
     private U createdBy;
