@@ -15,13 +15,11 @@ import java.util.Date;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "password_reset_tokens")
+@Table(name = "tokens")
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PasswordResetToken extends Auditable<String> {
-
-    static final int EXPIRATION = 60 * 24;
+public class Token extends Auditable<String> {
 
     @Id
     @GeneratedValue
@@ -35,17 +33,20 @@ public class PasswordResetToken extends Auditable<String> {
 
     Date expiryDate;
 
-    public PasswordResetToken(String token, User user) {
+    TokenType type;
+
+    public Token(String token, User user, TokenType type) {
         super();
         this.token = token;
         this.user = user;
+        this.type = type;
         this.expiryDate = calculateExpiryDate();
     }
 
     Date calculateExpiryDate() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Timestamp(cal.getTime().getTime()));
-        cal.add(Calendar.MINUTE, VerificationToken.EXPIRATION);
+        cal.add(Calendar.MINUTE, this.type.getExpirationTimeInMinutes());
         return new Date(cal.getTime().getTime());
     }
 }

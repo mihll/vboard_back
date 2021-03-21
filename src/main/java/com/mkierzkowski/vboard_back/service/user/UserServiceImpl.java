@@ -11,8 +11,8 @@ import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordResetRe
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
-import com.mkierzkowski.vboard_back.model.token.PasswordResetToken;
-import com.mkierzkowski.vboard_back.model.token.VerificationToken;
+import com.mkierzkowski.vboard_back.model.token.Token;
+import com.mkierzkowski.vboard_back.model.token.TokenType;
 import com.mkierzkowski.vboard_back.model.user.InstitutionUser;
 import com.mkierzkowski.vboard_back.model.user.PersonUser;
 import com.mkierzkowski.vboard_back.model.user.User;
@@ -22,8 +22,7 @@ import com.mkierzkowski.vboard_back.repository.UserRepository;
 import com.mkierzkowski.vboard_back.service.mail.OnRegistrationCompleteEvent;
 import com.mkierzkowski.vboard_back.service.mail.OnResetPasswordEvent;
 import com.mkierzkowski.vboard_back.service.storage.StorageService;
-import com.mkierzkowski.vboard_back.service.user.passwordreset.PasswordResetTokenService;
-import com.mkierzkowski.vboard_back.service.user.verification.VerificationTokenService;
+import com.mkierzkowski.vboard_back.service.token.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -60,10 +59,7 @@ public class UserServiceImpl implements UserService {
     private InstitutionUserRepository institutionUserRepository;
 
     @Autowired
-    private PasswordResetTokenService passwordResetTokenService;
-
-    @Autowired
-    private VerificationTokenService verificationTokenService;
+    private TokenService tokenService;
 
     @Autowired
     private StorageService storageService;
@@ -101,12 +97,12 @@ public class UserServiceImpl implements UserService {
             throw VBoardException.throwException(EntityType.REQUEST, ExceptionType.INVALID);
         }
 
-        VerificationToken createdToken = verificationTokenService.createVerificationToken(registeredUser);
+        Token verificationToken = tokenService.createToken(registeredUser, TokenType.VERIFICATION);
 
         try {
-            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(createdToken));
+            eventPublisher.publishEvent(new OnRegistrationCompleteEvent(verificationToken));
         } catch (RuntimeException ex) {
-            throw VBoardException.throwException(EntityType.VERIFICATION_TOKEN, ExceptionType.EMAIL_ERROR);
+            throw VBoardException.throwException(EntityType.TOKEN, ExceptionType.EMAIL_ERROR);
         }
 
     }
@@ -221,7 +217,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void verifyUserForToken(String token) {
-        User verifiedUser = verificationTokenService.getUserForValidVerificationToken(token);
+        User verifiedUser = tokenService.getUserForValidTokenOfType(token, TokenType.VERIFICATION);
         verifiedUser.setEnabled(true);
         userRepository.save(verifiedUser);
     }
@@ -231,11 +227,11 @@ public class UserServiceImpl implements UserService {
     public void resetPassword(UserPasswordResetRequestDto userPasswordResetRequestDto) {
         Optional<User> user = userRepository.findByEmail(userPasswordResetRequestDto.getEmail());
         if (user.isPresent()) {
-            PasswordResetToken createdToken = passwordResetTokenService.createPasswordResetToken(user.get());
+            Token createdToken = tokenService.createToken(user.get(), TokenType.PASSWORD_RESET);
             try {
                 eventPublisher.publishEvent(new OnResetPasswordEvent(createdToken));
             } catch (RuntimeException ex) {
-                throw VBoardException.throwException(EntityType.PASSWORD_RESET_TOKEN, ExceptionType.EMAIL_ERROR);
+                throw VBoardException.throwException(EntityType.TOKEN, ExceptionType.EMAIL_ERROR);
             }
         }
         // uncomment if you would like to inform client that user does not exist
@@ -252,7 +248,7 @@ public class UserServiceImpl implements UserService {
         if (userPasswordChangeRequestDto.getToken() != null && !userPasswordChangeRequestDto.getToken().isEmpty()) {
 
             //user is changing forgotten password using token sent in email link
-            currentUser = passwordResetTokenService.getUserForValidPasswordResetToken(userPasswordChangeRequestDto.getToken());
+            currentUser = tokenService.getUserForValidTokenOfType(userPasswordChangeRequestDto.getToken(), TokenType.PASSWORD_RESET);
             currentUser.setPassword(bCryptPasswordEncoder.encode(userPasswordChangeRequestDto.getNewPassword()));
 
         } else if (userPasswordChangeRequestDto.getCurrentPassword() != null && !userPasswordChangeRequestDto.getCurrentPassword().isEmpty()) {

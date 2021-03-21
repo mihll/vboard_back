@@ -1,9 +1,10 @@
 package com.mkierzkowski.vboard_back.security;
 
-import com.mkierzkowski.vboard_back.model.token.VerificationToken;
+import com.mkierzkowski.vboard_back.model.token.Token;
+import com.mkierzkowski.vboard_back.model.token.TokenType;
 import com.mkierzkowski.vboard_back.model.user.User;
 import com.mkierzkowski.vboard_back.repository.UserRepository;
-import com.mkierzkowski.vboard_back.service.user.verification.VerificationTokenService;
+import com.mkierzkowski.vboard_back.service.token.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
@@ -21,14 +22,14 @@ public class AuthUserDetailsService implements UserDetailsService {
     private UserRepository userRepository;
 
     @Autowired
-    private VerificationTokenService verificationTokenService;
+    private TokenService tokenService;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("user with email " + email + " does not exist."));
 
-        Optional<VerificationToken> verificationToken = verificationTokenService.getVerificationTokenForUser(user);
+        Optional<Token> verificationToken = tokenService.getTokenForUserOfType(user, TokenType.VERIFICATION);
 
         if (user.isEnabled()) {
             return user;

@@ -14,7 +14,6 @@ import com.mkierzkowski.vboard_back.model.user.InstitutionUser;
 import com.mkierzkowski.vboard_back.model.user.PersonUser;
 import com.mkierzkowski.vboard_back.model.user.User;
 import com.mkierzkowski.vboard_back.service.user.UserService;
-import com.mkierzkowski.vboard_back.service.user.verification.VerificationTokenService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,9 +30,6 @@ public class UserController {
 
     @Autowired
     UserService userService;
-
-    @Autowired
-    VerificationTokenService verificationTokenService;
 
     @Autowired
     ModelMapper modelMapper;

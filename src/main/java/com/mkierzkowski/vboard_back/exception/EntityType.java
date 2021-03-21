@@ -5,10 +5,9 @@ public enum EntityType {
     BOARD_LIST,
     CURRENT_PASSWORD,
     FILE,
-    PASSWORD_RESET_TOKEN,
     PROFILE_PIC,
     REFRESH_TOKEN,
     REQUEST,
+    TOKEN,
     USER,
-    VERIFICATION_TOKEN,
 }
