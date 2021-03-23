@@ -7,9 +7,6 @@ import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordResetRe
 import com.mkierzkowski.vboard_back.dto.response.user.InstitutionUserResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.user.PersonUserResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.user.UserResponseDto;
-import com.mkierzkowski.vboard_back.exception.EntityType;
-import com.mkierzkowski.vboard_back.exception.ExceptionType;
-import com.mkierzkowski.vboard_back.exception.VBoardException;
 import com.mkierzkowski.vboard_back.model.user.InstitutionUser;
 import com.mkierzkowski.vboard_back.model.user.PersonUser;
 import com.mkierzkowski.vboard_back.model.user.User;
@@ -98,7 +95,7 @@ public class UserController {
         } else if (user instanceof InstitutionUser) {
             responseDto = modelMapper.map(user, InstitutionUserResponseDto.class);
         } else {
-            throw VBoardException.throwException(EntityType.USER, ExceptionType.INVALID);
+            throw new RuntimeException("Could not prepare user of type: " + user.getClass().getSimpleName());
         }
         return responseDto;
     }

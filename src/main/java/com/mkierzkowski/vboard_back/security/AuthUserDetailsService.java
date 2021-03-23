@@ -27,16 +27,16 @@ public class AuthUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("user with email " + email + " does not exist."));
+                .orElseThrow(() -> new UsernameNotFoundException("User (" + email + ") does not exist."));
 
         Optional<Token> verificationToken = tokenService.getTokenForUserOfType(user, TokenType.VERIFICATION);
 
         if (user.isEnabled()) {
             return user;
         } else if (verificationToken.isPresent()) {
-            throw new DisabledException("User is not verified");
+            throw new DisabledException("User ( " + email + ") is not verified");
         } else {
-            throw new LockedException("User is blocked");
+            throw new LockedException("User (" + email + ") is blocked");
         }
 
     }

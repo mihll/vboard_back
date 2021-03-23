@@ -94,7 +94,7 @@ public class UserServiceImpl implements UserService {
                     .setEnabled(false);
             registeredUser = institutionUserRepository.save(institutionUser);
         } else {
-            throw VBoardException.throwException(EntityType.REQUEST, ExceptionType.INVALID);
+            throw new RuntimeException(userSignupRequestDto.getClass().getSimpleName() + " handling is not implemented yet!");
         }
 
         Token verificationToken = tokenService.createToken(registeredUser, TokenType.VERIFICATION);
@@ -129,7 +129,7 @@ public class UserServiceImpl implements UserService {
 
             return userRepository.saveAndFlush(currentInstitutionUser);
         } else {
-            throw VBoardException.throwException(EntityType.REQUEST, ExceptionType.INVALID);
+            throw new RuntimeException(userUpdateRequestDto.getClass().getSimpleName() + " handling is not implemented yet!");
         }
     }
 
@@ -143,14 +143,14 @@ public class UserServiceImpl implements UserService {
         }
 
         if (!Objects.equals(profilePic.getContentType(), "image/jpeg")) {
-            throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "File is in invalid format (only JPEGs are allowed)");
+            throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "Image is in invalid format (only JPEGs are allowed)");
         }
 
         try {
             BufferedImage image = ImageIO.read(profilePic.getInputStream());
             if (image != null) {
                 if (image.getWidth() != 200 || image.getHeight() != 200) {
-                    throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "File is in wrong size (should be 200x200 pixels)");
+                    throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "Images is in wrong size (should be 200x200 pixels)");
                 }
             } else {
                 throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "File is not an image");
@@ -262,7 +262,7 @@ public class UserServiceImpl implements UserService {
             }
 
         } else {
-            throw VBoardException.throwException(EntityType.REQUEST, ExceptionType.INVALID);
+            throw VBoardException.throwException(EntityType.REQUEST, ExceptionType.INVALID, "Current user's password or password reset token were not provided.");
         }
 
         userRepository.save(currentUser);

@@ -43,7 +43,7 @@ public class StorageServiceImpl implements StorageService {
             Files.createDirectories(pathToSave);
             Files.copy(inputStream, pathToSave.resolve(filename));
         } catch (IOException e) {
-            throw VBoardException.throwException(EntityType.FILE, ExceptionType.FAILED);
+            throw new RuntimeException("File (" + filename + ") save in directory (" + relativePath + ") failed.");
         }
 
         return filename;
@@ -77,7 +77,7 @@ public class StorageServiceImpl implements StorageService {
         try {
             Files.delete(pathToDelete.resolve(filename));
         } catch (IOException e) {
-            throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.FAILED);
+            throw new RuntimeException("File (" + filename + ") deletion in directory (" + relativePath + ") failed.");
         }
     }
 }

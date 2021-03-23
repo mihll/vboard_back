@@ -52,7 +52,7 @@ public class TokenServiceImpl implements TokenService {
     @Transactional
     public User getUserForValidTokenOfType(String token, TokenType wantedType) {
         Token foundToken = tokenRepository.findByToken(token)
-                .orElseThrow(() -> VBoardException.throwException(EntityType.TOKEN, ExceptionType.ENTITY_NOT_FOUND, token));
+                .orElseThrow(() -> VBoardException.throwException(EntityType.TOKEN, ExceptionType.INVALID, token));
 
         User user = foundToken.getUser();
         TokenType foundType = foundToken.getType();
@@ -68,7 +68,7 @@ public class TokenServiceImpl implements TokenService {
             if (foundType == TokenType.VERIFICATION) {
                 userService.deleteUser(user);
             }
-            throw VBoardException.throwException(EntityType.TOKEN, ExceptionType.EXPIRED, token);
+            throw VBoardException.throwException(EntityType.TOKEN, ExceptionType.EXPIRED, token, foundToken.getExpiryDate().toString());
         }
 
         tokenRepository.delete(foundToken);

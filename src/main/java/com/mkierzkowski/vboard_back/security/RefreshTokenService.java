@@ -44,7 +44,7 @@ public class RefreshTokenService {
                 return refreshResponseDto;
             }
         } catch (JWTVerificationException ex) {
-            throw VBoardException.throwException(EntityType.REFRESH_TOKEN, ExceptionType.INVALID);
+            throw VBoardException.throwException(EntityType.REFRESH_TOKEN, ExceptionType.INVALID, refreshToken);
         }
         return null;
     }
