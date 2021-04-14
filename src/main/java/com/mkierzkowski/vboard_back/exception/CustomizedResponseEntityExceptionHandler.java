@@ -55,4 +55,11 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         response.addErrorMsgToResponse(ex);
         return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(VBoardException.ForbiddenException.class)
+    public final ResponseEntity handleNotAuthorizedException(Exception ex, WebRequest request) {
+        Response response = Response.forbidden();
+        response.addErrorMsgToResponse(ex);
+        return new ResponseEntity(response, HttpStatus.FORBIDDEN);
+    }
 }

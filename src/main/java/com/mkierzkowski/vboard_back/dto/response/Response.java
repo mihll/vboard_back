@@ -60,6 +60,12 @@ public class Response<T> {
         return response;
     }
 
+    public static <T> Response<T> forbidden() {
+        Response<T> response = new Response<>();
+        response.setStatus(Status.FORBIDDEN);
+        return response;
+    }
+
     public void addErrorMsgToResponse(Exception ex) {
         ResponseError error = new ResponseError();
         Map<String, String> strings = getMessageAndDetails(ex);
@@ -84,6 +90,6 @@ public class Response<T> {
     }
 
     public enum Status {
-        OK, NOT_FOUND, DUPLICATE_ENTITY, VERIFICATION_EMAIL_ERROR, EXPIRED, NOT_VERIFIED, INVALID
+        OK, NOT_FOUND, DUPLICATE_ENTITY, VERIFICATION_EMAIL_ERROR, EXPIRED, NOT_VERIFIED, INVALID, FORBIDDEN
     }
 }

@@ -29,6 +29,9 @@ public class Board extends Auditable<String> {
     @NotNull
     Boolean isPrivate;
 
+    @NotNull
+    Boolean acceptAll = false;
+
     @NotBlank
     String boardName;
 
@@ -42,4 +45,7 @@ public class Board extends Auditable<String> {
 
     @OneToMany(mappedBy = "board")
     List<BoardMember> boardMembers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board")
+    List<BoardJoinRequest> boardJoinRequests = new ArrayList<>();
 }

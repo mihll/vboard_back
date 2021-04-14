@@ -9,7 +9,6 @@ import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 @EqualsAndHashCode(callSuper = true)
@@ -17,7 +16,7 @@ import java.util.Date;
 @Data
 @Accessors(chain = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class BoardMember extends Auditable<String> {
+public class BoardJoinRequest extends Auditable<String> {
 
     @EmbeddedId
     BoardMemberKey id;
@@ -32,34 +31,21 @@ public class BoardMember extends Auditable<String> {
     @JoinColumn(name = "board_id", insertable = false, updatable = false)
     Board board;
 
-    Integer orderIndex;
-
-    @NotNull
-    Boolean wantNotifications;
-
-    @NotNull
-    Boolean isAdmin;
-
-    @NotNull
-    Boolean didLeft;
-
-    public BoardMember(User user, Board board, Boolean wantNotifications, Boolean isAdmin) {
+    public BoardJoinRequest(User user, Board board) {
         this.id = new BoardMemberKey(user.getUserId(), board.getBoardId());
 
         this.user = user;
         this.board = board;
-        this.wantNotifications = wantNotifications;
-        this.isAdmin = isAdmin;
 
-        user.getJoinedBoards().add(this);
-        board.getBoardMembers().add(this);
+        user.getRequestedBoards().add(this);
+        board.getBoardJoinRequests().add(this);
     }
 
-    public BoardMember() {
+    public BoardJoinRequest() {
 
     }
 
-    public Date getJoinDate() {
+    public Date getJoinRequestDate() {
         return this.getCreatedDate();
     }
 }

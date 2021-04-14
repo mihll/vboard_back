@@ -35,6 +35,7 @@ public class VBoardException {
             case NOT_VERIFIED -> new NotVerifiedException(format(messageTemplate, args));
             case INVALID -> new InvalidException(format(messageTemplate, args));
             case FAILED -> new OperationFailedException(format(messageTemplate, args));
+            case FORBIDDEN -> new ForbiddenException(format(messageTemplate, args));
         };
     }
 
@@ -81,6 +82,12 @@ public class VBoardException {
 
     public static class OperationFailedException extends RuntimeException {
         public OperationFailedException(String message) {
+            super(message);
+        }
+    }
+
+    public static class ForbiddenException extends RuntimeException {
+        public ForbiddenException(String message) {
             super(message);
         }
     }

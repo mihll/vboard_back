@@ -3,9 +3,11 @@ package com.mkierzkowski.vboard_back.config;
 import com.mkierzkowski.vboard_back.dto.response.board.info.BoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.MyBoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.links.JoinedBoardLinkInfoResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.my.requested.RequestedBoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.user.InstitutionUserResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.user.PersonUserResponseDto;
 import com.mkierzkowski.vboard_back.model.board.Board;
+import com.mkierzkowski.vboard_back.model.board.BoardJoinRequest;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import com.mkierzkowski.vboard_back.model.user.InstitutionUser;
 import com.mkierzkowski.vboard_back.model.user.PersonUser;
@@ -57,12 +59,19 @@ public class VBoardConfiguration {
             mapper.map(src -> src.getId().getBoardId(), MyBoardInfoResponseDto::setBoardId);
             mapper.map(src -> src.getBoard().getBoardMembers().size(), MyBoardInfoResponseDto::setBoardMembers);
         });
+
+        modelMapper.typeMap(BoardJoinRequest.class, RequestedBoardInfoResponseDto.class).addMappings(mapper ->
+                mapper.map(src -> src.getId().getBoardId(), RequestedBoardInfoResponseDto::setBoardId));
+
         modelMapper.typeMap(Board.class, BoardInfoResponseDto.class).addMappings(mapper ->
                 mapper.map(Board::getBoardId, BoardInfoResponseDto::setBoardId));
+
         modelMapper.typeMap(Board.class, JoinedBoardLinkInfoResponseDto.class).addMappings(mapper ->
                 mapper.map(Board::getBoardId, JoinedBoardLinkInfoResponseDto::setBoardId));
+
         modelMapper.typeMap(PersonUser.class, PersonUserResponseDto.class).addMappings(mapper ->
                 mapper.map(src -> "person", PersonUserResponseDto::setUserType));
+
         modelMapper.typeMap(InstitutionUser.class, InstitutionUserResponseDto.class).addMappings(mapper ->
                 mapper.map(src -> "institution", InstitutionUserResponseDto::setUserType));
 
