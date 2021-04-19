@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users_shared",
@@ -72,6 +73,19 @@ public class User extends Auditable<String> implements UserDetails {
 
     public Date getSignupDate() {
         return this.getCreatedDate();
+    }
+
+    public List<BoardMember> getJoinedBoards() {
+        return this.joinedBoards.stream()
+                .filter(boardMember -> !boardMember.getDidLeft())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * @return Joined board list (including ones that user left, but hasn't been removed from by admins)
+     */
+    public List<BoardMember> getJoinedBoardsForModification() {
+        return this.joinedBoards;
     }
 
     @Override

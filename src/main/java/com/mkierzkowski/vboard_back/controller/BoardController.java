@@ -53,6 +53,12 @@ public class BoardController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/leave/{boardId:.+}")
+    public ResponseEntity<?> leaveBoard(@PathVariable Long boardId) {
+        boardService.leaveBoard(boardId);
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/changeOrder")
     public ResponseEntity<?> changeBoardOrder(@RequestBody @Valid ChangeBoardOrderRequestDto changeBoardOrderRequestDto) {
         boardService.changeBoardOrder(changeBoardOrderRequestDto);

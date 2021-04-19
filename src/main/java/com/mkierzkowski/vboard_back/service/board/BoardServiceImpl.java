@@ -116,6 +116,31 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    @Transactional
+    public void leaveBoard(Long boardId) {
+        Board boardToLeave = boardRepository.findById(boardId)
+                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.ENTITY_NOT_FOUND, boardId.toString()));
+
+        User currentUser = userService.getCurrentUser();
+
+        //check if user is not an only active admin of such board
+        if (boardToLeave.getBoardMembers().stream()
+                .filter(BoardMember::getIsAdmin)
+                .count() == 1) {
+            throw VBoardException.throwException(EntityType.BOARD_LEAVE_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
+        }
+
+        //check if user is a member of requested board
+        BoardMember userBoardToLeave = currentUser.getJoinedBoards().stream()
+                .filter(boardMember -> boardMember.getId().getBoardId().equals(boardId))
+                .findAny()
+                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD_LEAVE_REQUEST, ExceptionType.INVALID, boardId.toString()));
+
+        userBoardToLeave.setDidLeft(true);
+        boardMemberRepository.saveAndFlush(userBoardToLeave);
+    }
+
+    @Override
     public void changeBoardOrder(ChangeBoardOrderRequestDto changeBoardOrderRequestDto) {
 
         List<Long> boardIdsInOrder;
@@ -141,7 +166,7 @@ public class BoardServiceImpl implements BoardService {
             throw VBoardException.throwException(EntityType.BOARD_LIST, ExceptionType.INVALID, boardIdsInOrder.toString());
         }
 
-        currentUser.getJoinedBoards().sort(Comparator.comparing(board -> boardIdsInOrder.indexOf(board.getId().getBoardId())));
+        currentUser.getJoinedBoardsForModification().sort(Comparator.comparing(board -> boardIdsInOrder.indexOf(board.getId().getBoardId())));
 
         userService.saveAndFlushUser(currentUser);
     }
