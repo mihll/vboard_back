@@ -62,4 +62,9 @@ public class BoardMember extends Auditable<String> {
     public Date getJoinDate() {
         return this.getCreatedDate();
     }
+
+    public int getPostsNumber() {
+        return 0;
+    }
+
 }

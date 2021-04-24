@@ -23,6 +23,8 @@ public interface BoardService {
 
     BoardMember getBoardOfCurrentUserForId(Long boardId);
 
+    List<BoardMember> getBoardMembers(Long boardId);
+
     List<BoardMember> getJoinedBoardsOfCurrentUser();
 
     List<BoardJoinRequest> getRequestedBoardsOfCurrentUser();

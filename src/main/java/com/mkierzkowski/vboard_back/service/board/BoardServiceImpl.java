@@ -180,6 +180,11 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    public List<BoardMember> getBoardMembers(Long boardId) {
+        return getBoardOfCurrentUserForId(boardId).getBoard().getBoardMembers();
+    }
+
+    @Override
     public List<BoardMember> getJoinedBoardsOfCurrentUser() {
         User currentUser = userService.getCurrentUser();
         return currentUser.getJoinedBoards();

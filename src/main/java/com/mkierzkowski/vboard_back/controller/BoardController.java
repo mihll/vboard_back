@@ -5,6 +5,8 @@ import com.mkierzkowski.vboard_back.dto.request.board.CreateBoardRequestDto;
 import com.mkierzkowski.vboard_back.dto.response.board.CreateBoardResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.info.BoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.info.GetBoardsResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.members.BoardMemberInfoResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.members.GetBoardMembersResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.GetMyBoardsResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.MyBoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.links.GetMyBoardsLinksResponseDto;
@@ -69,6 +71,19 @@ public class BoardController {
     public ResponseEntity<MyBoardInfoResponseDto> getBoard(@PathVariable Long boardId) {
         BoardMember joinedBoard = boardService.getBoardOfCurrentUserForId(boardId);
         MyBoardInfoResponseDto responseDto = modelMapper.map(joinedBoard, MyBoardInfoResponseDto.class);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/{boardId:.+}/members")
+    public ResponseEntity<GetBoardMembersResponseDto> getBoardMembers(@PathVariable Long boardId) {
+        List<BoardMember> boardMembers = boardService.getBoardMembers(boardId);
+        GetBoardMembersResponseDto responseDto = new GetBoardMembersResponseDto();
+
+        responseDto.setMembers(boardMembers
+                .stream()
+                .map(boardMember -> modelMapper.map(boardMember, BoardMemberInfoResponseDto.class))
+                .collect(Collectors.toList()));
+
         return ResponseEntity.ok(responseDto);
     }
 
