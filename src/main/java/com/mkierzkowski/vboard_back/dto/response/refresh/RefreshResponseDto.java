@@ -14,6 +14,9 @@ import javax.validation.constraints.NotEmpty;
 public class RefreshResponseDto {
 
     @NotEmpty(message = "{constraints.NotEmpty.message}")
+    private String userId;
+
+    @NotEmpty(message = "{constraints.NotEmpty.message}")
     private String accessToken;
 
     @NotEmpty(message = "{constraints.NotEmpty.message}")

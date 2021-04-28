@@ -43,21 +43,21 @@ public class BoardController {
         return ResponseEntity.ok(responseDto);
     }
 
-    @PostMapping("/join/{boardId:.+}")
+    @PostMapping("/{boardId:.+}/join")
     public ResponseEntity<BoardInfoResponseDto> joinBoard(@PathVariable Long boardId) {
         BoardInfoResponseDto responseDto = boardService.requestBoardJoin(boardId);
         return ResponseEntity.ok(responseDto);
     }
 
-    @PostMapping("/revertJoin/{boardId:.+}")
+    @PostMapping("/{boardId:.+}/revertJoin")
     public ResponseEntity<?> revertBoardJoin(@PathVariable Long boardId) {
         boardService.revertBoardJoin(boardId);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/leave/{boardId:.+}")
-    public ResponseEntity<?> leaveBoard(@PathVariable Long boardId) {
-        boardService.leaveBoard(boardId);
+    @PostMapping("/{boardId:.+}/leave")
+    public ResponseEntity<?> leaveBoard(@PathVariable Long boardId, @RequestParam Long userId) {
+        boardService.leaveBoard(boardId, userId);
         return ResponseEntity.ok().build();
     }
 

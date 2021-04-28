@@ -17,7 +17,7 @@ public interface BoardService {
 
     void revertBoardJoin(Long boardId);
 
-    void leaveBoard(Long boardId);
+    void leaveBoard(Long boardId, Long userId);
 
     void changeBoardOrder(ChangeBoardOrderRequestDto changeBoardOrderRequestDto);
 

@@ -34,6 +34,7 @@ public class RefreshTokenService {
                 User user = userService.findUserByEmail(subject);
                 RefreshResponseDto refreshResponseDto = new RefreshResponseDto();
 
+                refreshResponseDto.setUserId(user.getUserId().toString());
                 refreshResponseDto.setProfilePicUrl(user.getProfilePicUrl());
                 refreshResponseDto.setName(user.getName());
                 refreshResponseDto.setAccessToken(JWT.create()

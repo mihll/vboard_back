@@ -69,6 +69,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .sign(HMAC512(REFRESH_TOKEN_SECRET.getBytes()));
 
         LoginResponseDto loginResponseDto = new LoginResponseDto()
+                .setUserId(authenticatedUser.getUserId().toString())
                 .setAccessToken(accessToken)
                 .setName(authenticatedUser.getName())
                 .setProfilePicUrl(authenticatedUser.getProfilePicUrl());

@@ -117,27 +117,44 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional
-    public void leaveBoard(Long boardId) {
+    public void leaveBoard(Long boardId, Long userId) {
         Board boardToLeave = boardRepository.findById(boardId)
                 .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.ENTITY_NOT_FOUND, boardId.toString()));
 
         User currentUser = userService.getCurrentUser();
 
-        //check if user is not an only active admin of such board
-        if (boardToLeave.getBoardMembers().stream()
-                .filter(BoardMember::getIsAdmin)
-                .count() == 1) {
-            throw VBoardException.throwException(EntityType.BOARD_LEAVE_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
-        }
-
-        //check if user is a member of requested board
-        BoardMember userBoardToLeave = currentUser.getJoinedBoards().stream()
+        //checks if user to leave is a member of requested board
+        BoardMember boardMemberToLeave = userService.findUserById(userId).getJoinedBoards().stream()
                 .filter(boardMember -> boardMember.getId().getBoardId().equals(boardId))
                 .findAny()
                 .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD_LEAVE_REQUEST, ExceptionType.INVALID, boardId.toString()));
 
-        userBoardToLeave.setDidLeft(true);
-        boardMemberRepository.saveAndFlush(userBoardToLeave);
+        //check if current user is requesting leave for himself OR is board admin
+        if (currentUser.equals(boardMemberToLeave.getUser())) {
+
+            //check if user is not an only admin of a board
+            if (boardMemberToLeave.getIsAdmin() && boardToLeave.getAdmins().count() == 1) {
+                throw VBoardException.throwException(EntityType.BOARD_LEAVE_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
+            }
+
+            boardMemberToLeave.setDidLeft(true);
+            boardMemberToLeave.setIsAdmin(false);
+            boardMemberRepository.saveAndFlush(boardMemberToLeave);
+
+        } else if (isBoardAdmin(boardToLeave, currentUser)) {
+
+            boardMemberToLeave.setDidLeft(true);
+            boardMemberToLeave.setIsAdmin(false);
+            boardMemberRepository.saveAndFlush(boardMemberToLeave);
+
+        } else {
+            throw VBoardException.throwException(EntityType.BOARD_LEAVE_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
+        }
+    }
+
+    private boolean isBoardAdmin(Board board, User user) {
+        return board.getAdmins()
+                .anyMatch(boardAdmin -> boardAdmin.getId().getUserId().equals(user.getUserId()));
     }
 
     @Override

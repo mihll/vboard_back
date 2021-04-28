@@ -13,6 +13,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -48,4 +49,9 @@ public class Board extends Auditable<String> {
 
     @OneToMany(mappedBy = "board")
     List<BoardJoinRequest> boardJoinRequests = new ArrayList<>();
+
+    public Stream<BoardMember> getAdmins() {
+        return boardMembers.stream()
+                .filter(BoardMember::getIsAdmin);
+    }
 }
