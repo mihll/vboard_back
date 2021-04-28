@@ -62,4 +62,11 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         response.addErrorMsgToResponse(ex);
         return new ResponseEntity(response, HttpStatus.FORBIDDEN);
     }
+
+    @ExceptionHandler(VBoardException.OperationFailedException.class)
+    public final ResponseEntity handleOperationFailedException(Exception ex, WebRequest request) {
+        Response response = Response.failed();
+        response.addErrorMsgToResponse(ex);
+        return new ResponseEntity(response, HttpStatus.CONFLICT);
+    }
 }

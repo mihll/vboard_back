@@ -19,7 +19,9 @@ public interface BoardService {
 
     void leaveBoard(Long boardId, Long userId);
 
-    void changeBoardOrder(ChangeBoardOrderRequestDto changeBoardOrderRequestDto);
+    void grantAdmin(Long boardId, Long userId);
+
+    void revokeAdmin(Long boardId, Long userId);
 
     BoardMember getBoardOfCurrentUserForId(Long boardId);
 
@@ -28,6 +30,8 @@ public interface BoardService {
     List<BoardMember> getJoinedBoardsOfCurrentUser();
 
     List<BoardJoinRequest> getRequestedBoardsOfCurrentUser();
+
+    void changeBoardOrder(ChangeBoardOrderRequestDto changeBoardOrderRequestDto);
 
     List<BoardInfoResponseDto> findPublicBoardsByName(String boardNameToSearchFor);
 }

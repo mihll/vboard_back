@@ -61,9 +61,15 @@ public class BoardController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/changeOrder")
-    public ResponseEntity<?> changeBoardOrder(@RequestBody @Valid ChangeBoardOrderRequestDto changeBoardOrderRequestDto) {
-        boardService.changeBoardOrder(changeBoardOrderRequestDto);
+    @PostMapping("/{boardId:.+}/grantAdmin")
+    public ResponseEntity<?> grantAdmin(@PathVariable Long boardId, @RequestParam Long userId) {
+        boardService.grantAdmin(boardId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{boardId:.+}/revokeAdmin")
+    public ResponseEntity<?> revokeAdmin(@PathVariable Long boardId, @RequestParam Long userId) {
+        boardService.revokeAdmin(boardId, userId);
         return ResponseEntity.ok().build();
     }
 
@@ -127,6 +133,12 @@ public class BoardController {
                 .collect(Collectors.toList()));
 
         return ResponseEntity.ok(responseDto);
+    }
+
+    @PutMapping("/changeOrder")
+    public ResponseEntity<?> changeBoardOrder(@RequestBody @Valid ChangeBoardOrderRequestDto changeBoardOrderRequestDto) {
+        boardService.changeBoardOrder(changeBoardOrderRequestDto);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/findByName")

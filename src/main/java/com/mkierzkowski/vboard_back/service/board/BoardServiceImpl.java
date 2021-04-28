@@ -121,20 +121,20 @@ public class BoardServiceImpl implements BoardService {
         Board boardToLeave = boardRepository.findById(boardId)
                 .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.ENTITY_NOT_FOUND, boardId.toString()));
 
-        User currentUser = userService.getCurrentUser();
-
         //checks if user to leave is a member of requested board
         BoardMember boardMemberToLeave = userService.findUserById(userId).getJoinedBoards().stream()
                 .filter(boardMember -> boardMember.getId().getBoardId().equals(boardId))
                 .findAny()
-                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD_LEAVE_REQUEST, ExceptionType.INVALID, boardId.toString()));
+                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD_LEAVE_REQUEST, ExceptionType.INVALID, userId.toString(), boardId.toString()));
+
+        User currentUser = userService.getCurrentUser();
 
         //check if current user is requesting leave for himself OR is board admin
         if (currentUser.equals(boardMemberToLeave.getUser())) {
 
             //check if user is not an only admin of a board
             if (boardMemberToLeave.getIsAdmin() && boardToLeave.getAdmins().count() == 1) {
-                throw VBoardException.throwException(EntityType.BOARD_LEAVE_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
+                throw VBoardException.throwException(EntityType.BOARD_LEAVE_REQUEST, ExceptionType.FAILED, userId.toString(), boardId.toString());
             }
 
             boardMemberToLeave.setDidLeft(true);
@@ -155,6 +155,90 @@ public class BoardServiceImpl implements BoardService {
     private boolean isBoardAdmin(Board board, User user) {
         return board.getAdmins()
                 .anyMatch(boardAdmin -> boardAdmin.getId().getUserId().equals(user.getUserId()));
+    }
+
+    @Override
+    public void grantAdmin(Long boardId, Long userId) {
+        Board boardToModify = boardRepository.findById(boardId)
+                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.ENTITY_NOT_FOUND, boardId.toString()));
+
+        //checks if user to grant admin is a member of requested board
+        BoardMember boardMemberToGrantAdmin = userService.findUserById(userId).getJoinedBoards().stream()
+                .filter(boardMember -> boardMember.getId().getBoardId().equals(boardId))
+                .findAny()
+                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD_GRANT_ADMIN_REQUEST, ExceptionType.INVALID, userId.toString(), boardId.toString()));
+
+        User currentUser = userService.getCurrentUser();
+
+        //check if current user is board admin
+        if (isBoardAdmin(boardToModify, currentUser)) {
+
+            if (boardMemberToGrantAdmin.getIsAdmin()) {
+                throw VBoardException.throwException(EntityType.BOARD_GRANT_ADMIN_REQUEST, ExceptionType.FAILED, userId.toString(), boardId.toString());
+            }
+
+            boardMemberToGrantAdmin.setIsAdmin(true);
+            boardMemberRepository.saveAndFlush(boardMemberToGrantAdmin);
+
+        } else {
+            throw VBoardException.throwException(EntityType.BOARD_GRANT_ADMIN_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
+        }
+    }
+
+    @Override
+    public void revokeAdmin(Long boardId, Long userId) {
+        Board boardToModify = boardRepository.findById(boardId)
+                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.ENTITY_NOT_FOUND, boardId.toString()));
+
+        //checks if user to grant admin is a member of requested board
+        BoardMember boardMemberToRevokeAdmin = userService.findUserById(userId).getJoinedBoards().stream()
+                .filter(boardMember -> boardMember.getId().getBoardId().equals(boardId))
+                .findAny()
+                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD_REVOKE_ADMIN_REQUEST, ExceptionType.INVALID, userId.toString(), boardId.toString()));
+
+        User currentUser = userService.getCurrentUser();
+
+        //check if current user is board admin
+        if (isBoardAdmin(boardToModify, currentUser)) {
+
+            //check if user is currently admin of requested board OR if is not an only admin of requested board
+            if (!boardMemberToRevokeAdmin.getIsAdmin()) {
+                throw VBoardException.throwException(EntityType.BOARD_REVOKE_ADMIN_REQUEST, ExceptionType.FAILED, "Requested user (" + userId + ") is not an admin of this board (" + boardId + ").");
+            } else if (boardToModify.getAdmins().count() == 1) {
+                throw VBoardException.throwException(EntityType.BOARD_REVOKE_ADMIN_REQUEST, ExceptionType.FAILED, "Requested user (" + userId + ") cannot be revoked admin permissions because he is an only admin of this board (" + boardId + ").");
+            }
+
+            boardMemberToRevokeAdmin.setIsAdmin(false);
+            boardMemberRepository.saveAndFlush(boardMemberToRevokeAdmin);
+
+        } else {
+            throw VBoardException.throwException(EntityType.BOARD_REVOKE_ADMIN_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
+        }
+    }
+
+    @Override
+    public BoardMember getBoardOfCurrentUserForId(Long boardId) {
+        return getJoinedBoardsOfCurrentUser().stream()
+                .filter(boardMember -> boardMember.getId().getBoardId().equals(boardId))
+                .findAny()
+                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.FORBIDDEN, boardId.toString()));
+    }
+
+    @Override
+    public List<BoardMember> getBoardMembers(Long boardId) {
+        return getBoardOfCurrentUserForId(boardId).getBoard().getBoardMembers();
+    }
+
+    @Override
+    public List<BoardMember> getJoinedBoardsOfCurrentUser() {
+        User currentUser = userService.getCurrentUser();
+        return currentUser.getJoinedBoards();
+    }
+
+    @Override
+    public List<BoardJoinRequest> getRequestedBoardsOfCurrentUser() {
+        User currentUser = userService.getCurrentUser();
+        return currentUser.getRequestedBoards();
     }
 
     @Override
@@ -186,31 +270,6 @@ public class BoardServiceImpl implements BoardService {
         currentUser.getJoinedBoardsForModification().sort(Comparator.comparing(board -> boardIdsInOrder.indexOf(board.getId().getBoardId())));
 
         userService.saveAndFlushUser(currentUser);
-    }
-
-    @Override
-    public BoardMember getBoardOfCurrentUserForId(Long boardId) {
-        return getJoinedBoardsOfCurrentUser().stream()
-                .filter(boardMember -> boardMember.getId().getBoardId().equals(boardId))
-                .findAny()
-                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.FORBIDDEN, boardId.toString()));
-    }
-
-    @Override
-    public List<BoardMember> getBoardMembers(Long boardId) {
-        return getBoardOfCurrentUserForId(boardId).getBoard().getBoardMembers();
-    }
-
-    @Override
-    public List<BoardMember> getJoinedBoardsOfCurrentUser() {
-        User currentUser = userService.getCurrentUser();
-        return currentUser.getJoinedBoards();
-    }
-
-    @Override
-    public List<BoardJoinRequest> getRequestedBoardsOfCurrentUser() {
-        User currentUser = userService.getCurrentUser();
-        return currentUser.getRequestedBoards();
     }
 
     @Override

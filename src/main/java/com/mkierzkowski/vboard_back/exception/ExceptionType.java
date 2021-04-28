@@ -7,7 +7,7 @@ public enum ExceptionType {
     NOT_VERIFIED("not.verified"),
     EXPIRED("expired"),
     INVALID("invalid"),
-    FAILED("operation.failed"),
+    FAILED("failed"),
     FORBIDDEN("forbidden");
 
     String value;
