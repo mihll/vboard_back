@@ -20,6 +20,7 @@ public class MyBoardInfoResponseDto {
 
     String boardId;
     Boolean isPrivate;
+    Boolean acceptAll;
     String boardName;
     String description;
     Date createdDate;

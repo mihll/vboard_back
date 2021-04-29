@@ -2,6 +2,7 @@ package com.mkierzkowski.vboard_back.service.board;
 
 import com.mkierzkowski.vboard_back.dto.request.board.ChangeBoardOrderRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.board.CreateBoardRequestDto;
+import com.mkierzkowski.vboard_back.dto.request.board.UpdateBoardRequestDto;
 import com.mkierzkowski.vboard_back.dto.response.board.info.BoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
@@ -65,9 +66,37 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional
+    public Board updateBoard(Long boardId, UpdateBoardRequestDto updateBoardRequestDto) {
+
+        Board boardToUpdate = getBoardById(boardId);
+        Optional<Board> sameNameBoard = boardRepository.findBoardByBoardName(updateBoardRequestDto.getBoardName());
+
+        //check if board with the same name does exist and if yes, if it is other board than the one we are modifying
+        if (sameNameBoard.isPresent() && !sameNameBoard.get().equals(boardToUpdate)) {
+            throw VBoardException.throwException(EntityType.BOARD, ExceptionType.DUPLICATE_ENTITY, updateBoardRequestDto.getBoardName());
+        }
+
+        User currentUser = userService.getCurrentUser();
+
+        if (isBoardAdmin(boardToUpdate, currentUser)) {
+            boardToUpdate.setBoardName(updateBoardRequestDto.getBoardName());
+            boardToUpdate.setDescription(updateBoardRequestDto.getDescription());
+            boardToUpdate.setIsPrivate(updateBoardRequestDto.getIsPrivate());
+            boardToUpdate.setAcceptAll(updateBoardRequestDto.getAcceptAll());
+            boardToUpdate.setAddressCity(updateBoardRequestDto.getAddressCity());
+            boardToUpdate.setAddressPostCode(updateBoardRequestDto.getAddressPostCode());
+            boardToUpdate.setAddressStreet(updateBoardRequestDto.getAddressStreet());
+
+            return boardRepository.saveAndFlush(boardToUpdate);
+        } else {
+            throw VBoardException.throwException(EntityType.BOARD_UPDATE_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
+        }
+    }
+
+    @Override
+    @Transactional
     public BoardInfoResponseDto requestBoardJoin(Long boardId) {
-        Board boardToJoin = boardRepository.findById(boardId)
-                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.ENTITY_NOT_FOUND, boardId.toString()));
+        Board boardToJoin = getBoardById(boardId);
 
         User currentUser = userService.getCurrentUser();
 
@@ -99,8 +128,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     @Transactional
     public void revertBoardJoin(Long boardId) {
-        Board boardToRevertJoinRequest = boardRepository.findById(boardId)
-                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.ENTITY_NOT_FOUND, boardId.toString()));
+        Board boardToRevertJoinRequest = getBoardById(boardId);
 
         User currentUser = userService.getCurrentUser();
 
@@ -118,8 +146,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     @Transactional
     public void leaveBoard(Long boardId, Long userId) {
-        Board boardToLeave = boardRepository.findById(boardId)
-                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.ENTITY_NOT_FOUND, boardId.toString()));
+        Board boardToLeave = getBoardById(boardId);
 
         //checks if user to leave is a member of requested board
         BoardMember boardMemberToLeave = userService.findUserById(userId).getJoinedBoards().stream()
@@ -152,15 +179,9 @@ public class BoardServiceImpl implements BoardService {
         }
     }
 
-    private boolean isBoardAdmin(Board board, User user) {
-        return board.getAdmins()
-                .anyMatch(boardAdmin -> boardAdmin.getId().getUserId().equals(user.getUserId()));
-    }
-
     @Override
     public void grantAdmin(Long boardId, Long userId) {
-        Board boardToModify = boardRepository.findById(boardId)
-                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.ENTITY_NOT_FOUND, boardId.toString()));
+        Board boardToModify = getBoardById(boardId);
 
         //checks if user to grant admin is a member of requested board
         BoardMember boardMemberToGrantAdmin = userService.findUserById(userId).getJoinedBoards().stream()
@@ -187,8 +208,7 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public void revokeAdmin(Long boardId, Long userId) {
-        Board boardToModify = boardRepository.findById(boardId)
-                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.ENTITY_NOT_FOUND, boardId.toString()));
+        Board boardToModify = getBoardById(boardId);
 
         //checks if user to grant admin is a member of requested board
         BoardMember boardMemberToRevokeAdmin = userService.findUserById(userId).getJoinedBoards().stream()
@@ -295,5 +315,15 @@ public class BoardServiceImpl implements BoardService {
                     }
                 })
                 .collect(Collectors.toList());
+    }
+
+    private boolean isBoardAdmin(Board board, User user) {
+        return board.getAdmins()
+                .anyMatch(boardAdmin -> boardAdmin.getId().getUserId().equals(user.getUserId()));
+    }
+
+    private Board getBoardById(Long boardId) {
+        return boardRepository.findById(boardId)
+                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.ENTITY_NOT_FOUND, boardId.toString()));
     }
 }

@@ -2,6 +2,7 @@ package com.mkierzkowski.vboard_back.controller;
 
 import com.mkierzkowski.vboard_back.dto.request.board.ChangeBoardOrderRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.board.CreateBoardRequestDto;
+import com.mkierzkowski.vboard_back.dto.request.board.UpdateBoardRequestDto;
 import com.mkierzkowski.vboard_back.dto.response.board.CreateBoardResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.info.BoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.info.GetBoardsResponseDto;
@@ -43,6 +44,33 @@ public class BoardController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @GetMapping("/{boardId:.+}")
+    public ResponseEntity<MyBoardInfoResponseDto> getBoard(@PathVariable Long boardId) {
+        BoardMember joinedBoard = boardService.getBoardOfCurrentUserForId(boardId);
+        MyBoardInfoResponseDto responseDto = modelMapper.map(joinedBoard, MyBoardInfoResponseDto.class);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/{boardId:.+}/members")
+    public ResponseEntity<GetBoardMembersResponseDto> getBoardMembers(@PathVariable Long boardId) {
+        List<BoardMember> boardMembers = boardService.getBoardMembers(boardId);
+        GetBoardMembersResponseDto responseDto = new GetBoardMembersResponseDto();
+
+        responseDto.setMembers(boardMembers
+                .stream()
+                .map(boardMember -> modelMapper.map(boardMember, BoardMemberInfoResponseDto.class))
+                .collect(Collectors.toList()));
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @PostMapping("/{boardId:.+}/update")
+    public ResponseEntity<BoardInfoResponseDto> updateBoard(@PathVariable Long boardId, @RequestBody @Valid UpdateBoardRequestDto updateBoardRequestDto) {
+        Board updatedBoard = boardService.updateBoard(boardId, updateBoardRequestDto);
+        BoardInfoResponseDto responseDto = modelMapper.map(updatedBoard, BoardInfoResponseDto.class);
+        return ResponseEntity.ok(responseDto);
+    }
+
     @PostMapping("/{boardId:.+}/join")
     public ResponseEntity<BoardInfoResponseDto> joinBoard(@PathVariable Long boardId) {
         BoardInfoResponseDto responseDto = boardService.requestBoardJoin(boardId);
@@ -71,26 +99,6 @@ public class BoardController {
     public ResponseEntity<?> revokeAdmin(@PathVariable Long boardId, @RequestParam Long userId) {
         boardService.revokeAdmin(boardId, userId);
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/{boardId:.+}")
-    public ResponseEntity<MyBoardInfoResponseDto> getBoard(@PathVariable Long boardId) {
-        BoardMember joinedBoard = boardService.getBoardOfCurrentUserForId(boardId);
-        MyBoardInfoResponseDto responseDto = modelMapper.map(joinedBoard, MyBoardInfoResponseDto.class);
-        return ResponseEntity.ok(responseDto);
-    }
-
-    @GetMapping("/{boardId:.+}/members")
-    public ResponseEntity<GetBoardMembersResponseDto> getBoardMembers(@PathVariable Long boardId) {
-        List<BoardMember> boardMembers = boardService.getBoardMembers(boardId);
-        GetBoardMembersResponseDto responseDto = new GetBoardMembersResponseDto();
-
-        responseDto.setMembers(boardMembers
-                .stream()
-                .map(boardMember -> modelMapper.map(boardMember, BoardMemberInfoResponseDto.class))
-                .collect(Collectors.toList()));
-
-        return ResponseEntity.ok(responseDto);
     }
 
     @GetMapping("/my")

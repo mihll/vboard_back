@@ -16,6 +16,7 @@ import java.util.Date;
 public class BoardInfoResponseDto {
     String boardId;
     Boolean isPrivate;
+    Boolean acceptAll;
     String boardName;
     String description;
     Date createdDate;
