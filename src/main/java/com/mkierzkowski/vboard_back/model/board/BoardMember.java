@@ -41,7 +41,7 @@ public class BoardMember extends Auditable<String> {
     Boolean isAdmin;
 
     @NotNull
-    Boolean didLeft;
+    Boolean didLeft = false;
 
     public BoardMember(User user, Board board, Boolean wantNotifications, Boolean isAdmin) {
         this.id = new BoardMemberKey(user.getUserId(), board.getBoardId());
@@ -51,7 +51,7 @@ public class BoardMember extends Auditable<String> {
         this.wantNotifications = wantNotifications;
         this.isAdmin = isAdmin;
 
-        user.getJoinedBoards().add(this);
+        user.getJoinedBoardsForModification().add(this);
         board.getBoardMembers().add(this);
     }
 

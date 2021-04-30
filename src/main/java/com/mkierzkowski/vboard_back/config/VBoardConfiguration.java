@@ -1,5 +1,6 @@
 package com.mkierzkowski.vboard_back.config;
 
+import com.mkierzkowski.vboard_back.dto.response.board.CreateBoardResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.info.BoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.members.BoardMemberInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.MyBoardInfoResponseDto;
@@ -69,6 +70,9 @@ public class VBoardConfiguration {
 
         modelMapper.typeMap(Board.class, JoinedBoardLinkInfoResponseDto.class).addMappings(mapper ->
                 mapper.map(Board::getBoardId, JoinedBoardLinkInfoResponseDto::setBoardId));
+
+        modelMapper.typeMap(Board.class, CreateBoardResponseDto.class).addMappings(mapper ->
+                mapper.map(Board::getBoardId, CreateBoardResponseDto::setBoardId));
 
         modelMapper.typeMap(PersonUser.class, PersonUserResponseDto.class).addMappings(mapper ->
                 mapper.map(src -> "person", PersonUserResponseDto::setUserType));
