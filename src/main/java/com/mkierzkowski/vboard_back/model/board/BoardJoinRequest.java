@@ -45,7 +45,7 @@ public class BoardJoinRequest extends Auditable<String> {
 
     }
 
-    public Date getJoinRequestDate() {
+    public Date getRequestDate() {
         return this.getCreatedDate();
     }
 }

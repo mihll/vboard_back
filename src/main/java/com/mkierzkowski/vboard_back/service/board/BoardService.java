@@ -18,9 +18,15 @@ public interface BoardService {
 
     BoardInfoResponseDto requestBoardJoin(Long boardId);
 
+    void acceptJoinRequest(Long boardId, Long userId);
+
+    void denyJoinRequest(Long boardId, Long userId);
+
     void revertBoardJoin(Long boardId);
 
     void leaveBoard(Long boardId, Long userId);
+
+    void restoreBoardMember(Long boardId, Long userId);
 
     void grantAdmin(Long boardId, Long userId);
 
@@ -29,6 +35,8 @@ public interface BoardService {
     BoardMember getBoardOfCurrentUserForId(Long boardId);
 
     List<BoardMember> getBoardMembers(Long boardId);
+
+    List<BoardJoinRequest> getBoardJoinRequests(Long boardId);
 
     List<BoardMember> getJoinedBoardsOfCurrentUser();
 

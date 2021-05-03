@@ -58,8 +58,7 @@ public class BoardServiceImpl implements BoardService {
         boardToCreate = boardRepository.saveAndFlush(boardToCreate);
 
         User boardCreator = userService.getCurrentUser();
-        BoardMember boardMember = new BoardMember(boardCreator, boardToCreate, false, true);
-        boardMemberRepository.saveAndFlush(boardMember);
+        addUserToBoard(boardToCreate, boardCreator, true);
 
         return boardToCreate;
     }
@@ -114,14 +113,73 @@ public class BoardServiceImpl implements BoardService {
 
         //check if board should accept all requesting users
         if (boardToJoin.getAcceptAll()) {
-            //TODO: should call method to add user to board
-            return null;
+            BoardMember addedUser = addUserToBoard(boardToJoin, currentUser, false);
+
+            return modelMapper.map(addedUser.getBoard(), BoardInfoResponseDto.class)
+                    .setIsJoined(true);
         } else {
             BoardJoinRequest boardJoinRequest = new BoardJoinRequest(currentUser, boardToJoin);
             boardJoinRequestRepository.saveAndFlush(boardJoinRequest);
 
             return modelMapper.map(boardJoinRequest.getBoard(), BoardInfoResponseDto.class)
                     .setIsRequested(true);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void acceptJoinRequest(Long boardId, Long userId) {
+        Board requestedBoard = getBoardById(boardId);
+
+        User currentUser = userService.getCurrentUser();
+
+        if (isBoardAdmin(requestedBoard, currentUser)) {
+            //checks if join request for requested user exists
+            BoardJoinRequest joinRequestToAccept = requestedBoard.getBoardJoinRequests().stream()
+                    .filter(joinRequest -> joinRequest.getId().getUserId().equals(userId))
+                    .findAny()
+                    .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD_JOIN_REQUEST, ExceptionType.ENTITY_NOT_FOUND, userId.toString(), boardId.toString()));
+
+            addUserToBoard(joinRequestToAccept.getBoard(), joinRequestToAccept.getUser(), false);
+
+            boardJoinRequestRepository.delete(joinRequestToAccept);
+        } else {
+            throw VBoardException.throwException(EntityType.BOARD_JOIN_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
+        }
+    }
+
+    @Override
+    public void denyJoinRequest(Long boardId, Long userId) {
+        Board requestedBoard = getBoardById(boardId);
+
+        User currentUser = userService.getCurrentUser();
+
+        if (isBoardAdmin(requestedBoard, currentUser)) {
+            //checks if join request for requested user exists
+            BoardJoinRequest joinRequestToDeny = requestedBoard.getBoardJoinRequests().stream()
+                    .filter(joinRequest -> joinRequest.getId().getUserId().equals(userId))
+                    .findAny()
+                    .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD_JOIN_REQUEST, ExceptionType.ENTITY_NOT_FOUND, userId.toString(), boardId.toString()));
+
+            boardJoinRequestRepository.delete(joinRequestToDeny);
+        } else {
+            throw VBoardException.throwException(EntityType.BOARD_JOIN_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
+        }
+    }
+
+    private BoardMember addUserToBoard(Board boardToAddTo, User userToAdd, Boolean isAdmin) {
+
+        Optional<BoardMember> existingBoardMember = boardToAddTo.getBoardMembers().stream()
+                .filter(joinRequest -> joinRequest.getUser().equals(userToAdd))
+                .findAny();
+
+        //checks if user did previously leave that board
+        if (existingBoardMember.isPresent()) {
+            existingBoardMember.get().setDidLeft(false);
+            return boardMemberRepository.saveAndFlush(existingBoardMember.get());
+        } else {
+            BoardMember boardMember = new BoardMember(userToAdd, boardToAddTo, false, isAdmin);
+            return boardMemberRepository.saveAndFlush(boardMember);
         }
     }
 
@@ -136,7 +194,7 @@ public class BoardServiceImpl implements BoardService {
         BoardJoinRequest boardJoinRequestToRevert = currentUser.getRequestedBoards().stream()
                 .filter(boardJoinRequest -> boardJoinRequest.getId().getBoardId().equals(boardToRevertJoinRequest.getBoardId()))
                 .findAny()
-                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD_JOIN_REQUEST, ExceptionType.ENTITY_NOT_FOUND, boardId.toString()));
+                .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD_JOIN_REQUEST, ExceptionType.ENTITY_NOT_FOUND, currentUser.getUserId().toString(), boardId.toString()));
 
         currentUser.getRequestedBoards().remove(boardJoinRequestToRevert);
         boardJoinRequestToRevert.getBoard().getBoardJoinRequests().remove(boardJoinRequestToRevert);
@@ -177,6 +235,41 @@ public class BoardServiceImpl implements BoardService {
         } else {
             throw VBoardException.throwException(EntityType.BOARD_LEAVE_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
         }
+    }
+
+    @Override
+    @Transactional
+    public void restoreBoardMember(Long boardId, Long userId) {
+        Board requestedBoard = getBoardById(boardId);
+
+        User currentUser = userService.getCurrentUser();
+
+        if (isBoardAdmin(requestedBoard, currentUser)) {
+
+            //checks if user to restore is a member of requested board
+            BoardMember boardMemberToRestore = getBoardMembers(boardId).stream()
+                    .filter(boardMember -> boardMember.getId().getUserId().equals(userId))
+                    .findAny()
+                    .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD_MEMBER_RESTORE_REQUEST, ExceptionType.INVALID, userId.toString(), boardId.toString()));
+
+            //checks if user to restore has left the board
+            if (!boardMemberToRestore.getDidLeft()) {
+                throw VBoardException.throwException(EntityType.BOARD_MEMBER_RESTORE_REQUEST, ExceptionType.FAILED, userId.toString(), boardId.toString());
+            }
+
+            //checks if user has sent a request to join the board again and if so deletes the request
+            requestedBoard.getBoardJoinRequests().stream()
+                    .filter(joinRequest -> joinRequest.getId().getUserId().equals(userId))
+                    .findAny()
+                    .ifPresent(joinRequest -> boardJoinRequestRepository.delete(joinRequest));
+
+            boardMemberToRestore.setDidLeft(false);
+            boardMemberRepository.saveAndFlush(boardMemberToRestore);
+
+        } else {
+            throw VBoardException.throwException(EntityType.BOARD_MEMBER_RESTORE_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
+        }
+
     }
 
     @Override
@@ -247,6 +340,19 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public List<BoardMember> getBoardMembers(Long boardId) {
         return getBoardOfCurrentUserForId(boardId).getBoard().getBoardMembers();
+    }
+
+    @Override
+    public List<BoardJoinRequest> getBoardJoinRequests(Long boardId) {
+        Board requestedBoard = getBoardById(boardId);
+
+        User currentUser = userService.getCurrentUser();
+
+        if (isBoardAdmin(requestedBoard, currentUser)) {
+            return requestedBoard.getBoardJoinRequests();
+        } else {
+            throw VBoardException.throwException(EntityType.BOARD_JOIN_REQUESTS_LIST, ExceptionType.FORBIDDEN, boardId.toString());
+        }
     }
 
     @Override

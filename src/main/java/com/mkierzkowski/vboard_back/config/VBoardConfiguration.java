@@ -2,6 +2,7 @@ package com.mkierzkowski.vboard_back.config;
 
 import com.mkierzkowski.vboard_back.dto.response.board.CreateBoardResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.info.BoardInfoResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.joinRequests.BoardJoinRequestResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.members.BoardMemberInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.MyBoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.links.JoinedBoardLinkInfoResponseDto;
@@ -82,6 +83,9 @@ public class VBoardConfiguration {
 
         modelMapper.typeMap(BoardMember.class, BoardMemberInfoResponseDto.class).addMappings(mapper ->
                 mapper.map(src -> src.getId().getUserId().toString(), BoardMemberInfoResponseDto::setUserId));
+
+        modelMapper.typeMap(BoardJoinRequest.class, BoardJoinRequestResponseDto.class).addMappings(mapper ->
+                mapper.map(src -> src.getId().getUserId().toString(), BoardJoinRequestResponseDto::setUserId));
 
         return modelMapper;
     }

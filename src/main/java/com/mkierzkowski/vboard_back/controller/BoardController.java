@@ -6,6 +6,8 @@ import com.mkierzkowski.vboard_back.dto.request.board.UpdateBoardRequestDto;
 import com.mkierzkowski.vboard_back.dto.response.board.CreateBoardResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.info.BoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.info.GetBoardsResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.joinRequests.BoardJoinRequestResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.board.joinRequests.GetBoardJoinRequestsResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.members.BoardMemberInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.members.GetBoardMembersResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.GetMyBoardsResponseDto;
@@ -64,6 +66,31 @@ public class BoardController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @GetMapping("/{boardId:.+}/joinRequests")
+    public ResponseEntity<GetBoardJoinRequestsResponseDto> getBoardJoinRequests(@PathVariable Long boardId) {
+        List<BoardJoinRequest> joinRequests = boardService.getBoardJoinRequests(boardId);
+        GetBoardJoinRequestsResponseDto responseDto = new GetBoardJoinRequestsResponseDto();
+
+        responseDto.setJoinRequests(joinRequests
+                .stream()
+                .map(joinRequest -> modelMapper.map(joinRequest, BoardJoinRequestResponseDto.class))
+                .collect(Collectors.toList()));
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @PostMapping("/{boardId:.+}/joinRequest/accept")
+    public ResponseEntity<?> acceptJoinRequest(@PathVariable Long boardId, @RequestParam Long userId) {
+        boardService.acceptJoinRequest(boardId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{boardId:.+}/joinRequest/deny")
+    public ResponseEntity<?> denyJoinRequest(@PathVariable Long boardId, @RequestParam Long userId) {
+        boardService.denyJoinRequest(boardId, userId);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/{boardId:.+}/update")
     public ResponseEntity<BoardInfoResponseDto> updateBoard(@PathVariable Long boardId, @RequestBody @Valid UpdateBoardRequestDto updateBoardRequestDto) {
         Board updatedBoard = boardService.updateBoard(boardId, updateBoardRequestDto);
@@ -86,6 +113,12 @@ public class BoardController {
     @PostMapping("/{boardId:.+}/leave")
     public ResponseEntity<?> leaveBoard(@PathVariable Long boardId, @RequestParam Long userId) {
         boardService.leaveBoard(boardId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{boardId:.+}/restoreMember")
+    public ResponseEntity<?> restoreBoardMember(@PathVariable Long boardId, @RequestParam Long userId) {
+        boardService.restoreBoardMember(boardId, userId);
         return ResponseEntity.ok().build();
     }
 
