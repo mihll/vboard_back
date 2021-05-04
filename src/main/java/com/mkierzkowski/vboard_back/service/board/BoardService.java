@@ -45,4 +45,6 @@ public interface BoardService {
     void changeBoardOrder(ChangeBoardOrderRequestDto changeBoardOrderRequestDto);
 
     List<BoardInfoResponseDto> findPublicBoardsByName(String boardNameToSearchFor);
+
+    Board getBoardById(Long boardId);
 }

@@ -428,7 +428,8 @@ public class BoardServiceImpl implements BoardService {
                 .anyMatch(boardAdmin -> boardAdmin.getId().getUserId().equals(user.getUserId()));
     }
 
-    private Board getBoardById(Long boardId) {
+    @Override
+    public Board getBoardById(Long boardId) {
         return boardRepository.findById(boardId)
                 .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD, ExceptionType.ENTITY_NOT_FOUND, boardId.toString()));
     }

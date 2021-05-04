@@ -53,6 +53,13 @@ public class BoardController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @GetMapping("/{boardId:.+}/publicInfo")
+    public ResponseEntity<BoardInfoResponseDto> getBoardPublicInfo(@PathVariable Long boardId) {
+        Board requestedBoard = boardService.getBoardById(boardId);
+        BoardInfoResponseDto responseDto = modelMapper.map(requestedBoard, BoardInfoResponseDto.class);
+        return ResponseEntity.ok(responseDto);
+    }
+
     @GetMapping("/{boardId:.+}/members")
     public ResponseEntity<GetBoardMembersResponseDto> getBoardMembers(@PathVariable Long boardId) {
         List<BoardMember> boardMembers = boardService.getBoardMembers(boardId);
