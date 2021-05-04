@@ -154,10 +154,7 @@ public class BoardController {
 
         responseDto.setBoardLinks(joinedBoards
                 .stream()
-                .map(boardMember -> {
-                    Board currentBoard = boardMember.getBoard();
-                    return modelMapper.map(currentBoard, JoinedBoardLinkInfoResponseDto.class);
-                })
+                .map(boardMember -> modelMapper.map(boardMember, JoinedBoardLinkInfoResponseDto.class))
                 .collect(Collectors.toList()));
 
         return ResponseEntity.ok(responseDto);

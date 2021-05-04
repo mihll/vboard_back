@@ -69,8 +69,8 @@ public class VBoardConfiguration {
         modelMapper.typeMap(Board.class, BoardInfoResponseDto.class).addMappings(mapper ->
                 mapper.map(Board::getBoardId, BoardInfoResponseDto::setBoardId));
 
-        modelMapper.typeMap(Board.class, JoinedBoardLinkInfoResponseDto.class).addMappings(mapper ->
-                mapper.map(Board::getBoardId, JoinedBoardLinkInfoResponseDto::setBoardId));
+        modelMapper.typeMap(BoardMember.class, JoinedBoardLinkInfoResponseDto.class).addMappings(mapper ->
+                mapper.map(src -> src.getId().getBoardId(), JoinedBoardLinkInfoResponseDto::setBoardId));
 
         modelMapper.typeMap(Board.class, CreateBoardResponseDto.class).addMappings(mapper ->
                 mapper.map(Board::getBoardId, CreateBoardResponseDto::setBoardId));

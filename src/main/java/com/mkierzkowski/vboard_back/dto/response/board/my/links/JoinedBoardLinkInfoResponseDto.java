@@ -12,4 +12,5 @@ import lombok.Setter;
 public class JoinedBoardLinkInfoResponseDto {
     String boardId;
     String boardName;
+    Integer notificationsNumber;
 }
