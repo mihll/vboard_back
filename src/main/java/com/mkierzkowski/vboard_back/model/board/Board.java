@@ -1,6 +1,7 @@
 package com.mkierzkowski.vboard_back.model.board;
 
 import com.mkierzkowski.vboard_back.config.auditing.Auditable;
+import com.mkierzkowski.vboard_back.model.post.Post;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -36,6 +37,7 @@ public class Board extends Auditable<String> {
     @NotBlank
     String boardName;
 
+    @Column(name = "description", columnDefinition = "LONGTEXT")
     String description;
 
     String addressCity;
@@ -49,6 +51,9 @@ public class Board extends Auditable<String> {
 
     @OneToMany(mappedBy = "board")
     List<BoardJoinRequest> boardJoinRequests = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board")
+    List<Post> boardPosts;
 
     public Stream<BoardMember> getAdmins() {
         return boardMembers.stream()

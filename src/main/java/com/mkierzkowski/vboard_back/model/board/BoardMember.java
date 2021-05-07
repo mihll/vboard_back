@@ -1,6 +1,7 @@
 package com.mkierzkowski.vboard_back.model.board;
 
 import com.mkierzkowski.vboard_back.config.auditing.Auditable;
+import com.mkierzkowski.vboard_back.model.post.Post;
 import com.mkierzkowski.vboard_back.model.user.User;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -11,6 +12,7 @@ import lombok.experimental.FieldDefaults;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -31,6 +33,9 @@ public class BoardMember extends Auditable<String> {
     @MapsId("boardId")
     @JoinColumn(name = "board_id", insertable = false, updatable = false)
     Board board;
+
+    @OneToMany(mappedBy = "boardMember")
+    List<Post> memberPosts;
 
     Integer orderIndex;
 
@@ -64,7 +69,7 @@ public class BoardMember extends Auditable<String> {
     }
 
     public int getPostsNumber() {
-        return 0;
+        return memberPosts.size();
     }
 
     public int getNotificationsNumber() {

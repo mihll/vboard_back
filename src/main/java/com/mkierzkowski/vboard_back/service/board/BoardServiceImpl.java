@@ -10,6 +10,7 @@ import com.mkierzkowski.vboard_back.exception.VBoardException;
 import com.mkierzkowski.vboard_back.model.board.Board;
 import com.mkierzkowski.vboard_back.model.board.BoardJoinRequest;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
+import com.mkierzkowski.vboard_back.model.post.Post;
 import com.mkierzkowski.vboard_back.model.user.User;
 import com.mkierzkowski.vboard_back.repository.BoardJoinRequestRepository;
 import com.mkierzkowski.vboard_back.repository.BoardMemberRepository;
@@ -330,7 +331,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public BoardMember getBoardOfCurrentUserForId(Long boardId) {
+    public BoardMember getBoardMemberOfCurrentUserForId(Long boardId) {
         return getJoinedBoardsOfCurrentUser().stream()
                 .filter(boardMember -> boardMember.getId().getBoardId().equals(boardId))
                 .findAny()
@@ -339,7 +340,12 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public List<BoardMember> getBoardMembers(Long boardId) {
-        return getBoardOfCurrentUserForId(boardId).getBoard().getBoardMembers();
+        return getBoardMemberOfCurrentUserForId(boardId).getBoard().getBoardMembers();
+    }
+
+    @Override
+    public List<Post> getBoardPosts(Long boardId) {
+        return getBoardMemberOfCurrentUserForId(boardId).getBoard().getBoardPosts();
     }
 
     @Override

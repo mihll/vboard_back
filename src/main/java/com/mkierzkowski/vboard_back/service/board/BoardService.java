@@ -7,6 +7,7 @@ import com.mkierzkowski.vboard_back.dto.response.board.info.BoardInfoResponseDto
 import com.mkierzkowski.vboard_back.model.board.Board;
 import com.mkierzkowski.vboard_back.model.board.BoardJoinRequest;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
+import com.mkierzkowski.vboard_back.model.post.Post;
 
 import java.util.List;
 
@@ -32,7 +33,9 @@ public interface BoardService {
 
     void revokeAdmin(Long boardId, Long userId);
 
-    BoardMember getBoardOfCurrentUserForId(Long boardId);
+    BoardMember getBoardMemberOfCurrentUserForId(Long boardId);
+
+    List<Post> getBoardPosts(Long boardId);
 
     List<BoardMember> getBoardMembers(Long boardId);
 
