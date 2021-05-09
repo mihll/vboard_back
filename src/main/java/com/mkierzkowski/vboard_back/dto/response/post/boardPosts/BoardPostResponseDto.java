@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,5 +19,7 @@ public class BoardPostResponseDto {
 
     String postId;
     String postText;
+    Date createdDate;
+    Date lastModifiedDate;
     Boolean isPinned;
 }

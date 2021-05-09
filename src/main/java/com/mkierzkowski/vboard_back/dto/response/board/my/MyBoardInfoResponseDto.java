@@ -17,7 +17,8 @@ public class MyBoardInfoResponseDto {
     Boolean isAdmin;
     Integer orderIndex;
     Integer boardMembers;
-    Integer notificationsNumber;
+    Integer notificationsCount;
+    Integer boardPostsCount;
 
     String boardId;
     Boolean isPrivate;

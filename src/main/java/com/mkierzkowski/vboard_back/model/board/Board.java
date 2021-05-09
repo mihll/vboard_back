@@ -59,4 +59,9 @@ public class Board extends Auditable<String> {
         return boardMembers.stream()
                 .filter(BoardMember::getIsAdmin);
     }
+
+    public int getBoardPostsCount() {
+        return boardPosts.size();
+    }
+
 }

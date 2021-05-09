@@ -21,5 +21,5 @@ public class BoardMemberInfoResponseDto {
     Boolean isAdmin;
     Boolean didLeft;
     Date joinDate;
-    int postsNumber;
+    Integer memberPostsCount;
 }
