@@ -26,8 +26,8 @@ public class Post extends Auditable<String> {
 
     @ManyToOne
     @JoinColumns({
-            @JoinColumn(name = "user_id"),
-            @JoinColumn(name = "board_id")
+            @JoinColumn(name = "board_id"),
+            @JoinColumn(name = "user_id")
     })
     BoardMember boardMember;
 

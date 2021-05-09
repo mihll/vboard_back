@@ -429,7 +429,8 @@ public class BoardServiceImpl implements BoardService {
                 .collect(Collectors.toList());
     }
 
-    private boolean isBoardAdmin(Board board, User user) {
+    @Override
+    public boolean isBoardAdmin(Board board, User user) {
         return board.getAdmins()
                 .anyMatch(boardAdmin -> boardAdmin.getId().getUserId().equals(user.getUserId()));
     }

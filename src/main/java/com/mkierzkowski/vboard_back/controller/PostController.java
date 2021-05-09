@@ -7,10 +7,7 @@ import com.mkierzkowski.vboard_back.service.post.PostService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -29,5 +26,17 @@ public class PostController {
         Post createdPost = postService.createPost(createPostRequestDto);
         CreatePostResponseDto responseDto = modelMapper.map(createdPost, CreatePostResponseDto.class);
         return ResponseEntity.ok(responseDto);
+    }
+
+    @PutMapping("/{postId:.+}/pin")
+    public ResponseEntity<?> pinPost(@PathVariable Long postId) {
+        postService.pinPost(postId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{postId:.+}/unpin")
+    public ResponseEntity<?> unpinPost(@PathVariable Long postId) {
+        postService.unpinPost(postId);
+        return ResponseEntity.ok().build();
     }
 }

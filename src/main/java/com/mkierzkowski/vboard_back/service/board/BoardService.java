@@ -8,6 +8,7 @@ import com.mkierzkowski.vboard_back.model.board.Board;
 import com.mkierzkowski.vboard_back.model.board.BoardJoinRequest;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import com.mkierzkowski.vboard_back.model.post.Post;
+import com.mkierzkowski.vboard_back.model.user.User;
 
 import java.util.List;
 
@@ -48,6 +49,8 @@ public interface BoardService {
     void changeBoardOrder(ChangeBoardOrderRequestDto changeBoardOrderRequestDto);
 
     List<BoardInfoResponseDto> findPublicBoardsByName(String boardNameToSearchFor);
+
+    boolean isBoardAdmin(Board board, User user);
 
     Board getBoardById(Long boardId);
 }
