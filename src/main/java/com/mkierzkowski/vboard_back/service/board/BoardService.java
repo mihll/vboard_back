@@ -34,7 +34,7 @@ public interface BoardService {
 
     void revokeAdmin(Long boardId, Long userId);
 
-    BoardMember getBoardMemberOfCurrentUserForId(Long boardId);
+    BoardMember getBoardMemberOfCurrentUserForBoardId(Long boardId);
 
     List<Post> getBoardPosts(Long boardId);
 

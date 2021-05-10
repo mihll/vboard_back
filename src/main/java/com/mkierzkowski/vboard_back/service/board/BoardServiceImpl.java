@@ -12,9 +12,9 @@ import com.mkierzkowski.vboard_back.model.board.BoardJoinRequest;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import com.mkierzkowski.vboard_back.model.post.Post;
 import com.mkierzkowski.vboard_back.model.user.User;
-import com.mkierzkowski.vboard_back.repository.BoardJoinRequestRepository;
-import com.mkierzkowski.vboard_back.repository.BoardMemberRepository;
-import com.mkierzkowski.vboard_back.repository.BoardRepository;
+import com.mkierzkowski.vboard_back.repository.board.BoardJoinRequestRepository;
+import com.mkierzkowski.vboard_back.repository.board.BoardMemberRepository;
+import com.mkierzkowski.vboard_back.repository.board.BoardRepository;
 import com.mkierzkowski.vboard_back.service.user.UserService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -331,7 +331,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public BoardMember getBoardMemberOfCurrentUserForId(Long boardId) {
+    public BoardMember getBoardMemberOfCurrentUserForBoardId(Long boardId) {
         return getJoinedBoardsOfCurrentUser().stream()
                 .filter(boardMember -> boardMember.getId().getBoardId().equals(boardId))
                 .findAny()
@@ -340,12 +340,12 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public List<BoardMember> getBoardMembers(Long boardId) {
-        return getBoardMemberOfCurrentUserForId(boardId).getBoard().getBoardMembers();
+        return getBoardMemberOfCurrentUserForBoardId(boardId).getBoard().getBoardMembers();
     }
 
     @Override
     public List<Post> getBoardPosts(Long boardId) {
-        return getBoardMemberOfCurrentUserForId(boardId).getBoard().getBoardPosts();
+        return getBoardMemberOfCurrentUserForBoardId(boardId).getBoard().getBoardPosts();
     }
 
     @Override

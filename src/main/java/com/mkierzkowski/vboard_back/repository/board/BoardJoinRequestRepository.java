@@ -1,4 +1,4 @@
-package com.mkierzkowski.vboard_back.repository;
+package com.mkierzkowski.vboard_back.repository.board;
 
 import com.mkierzkowski.vboard_back.model.board.BoardJoinRequest;
 import com.mkierzkowski.vboard_back.model.board.BoardMemberKey;

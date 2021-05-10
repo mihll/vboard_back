@@ -3,6 +3,7 @@ package com.mkierzkowski.vboard_back.model.post;
 import com.mkierzkowski.vboard_back.config.auditing.Auditable;
 import com.mkierzkowski.vboard_back.model.board.Board;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
+import com.mkierzkowski.vboard_back.model.user.User;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,6 +13,7 @@ import lombok.experimental.FieldDefaults;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -42,6 +44,9 @@ public class Post extends Auditable<String> {
     @Column(name = "postText", columnDefinition = "LONGTEXT")
     String postText;
 
+    @OneToMany(mappedBy = "post")
+    List<PostLike> postLikes;
+
     public Post(BoardMember boardMember, String postText) {
         this.boardMember = boardMember;
         this.board = boardMember.getBoard();
@@ -53,5 +58,14 @@ public class Post extends Auditable<String> {
 
     public Post() {
 
+    }
+
+    public int getPostLikesCount() {
+        return postLikes.size();
+    }
+
+    public boolean isLikedByUser(User user) {
+        return postLikes.stream()
+                .anyMatch(postLike -> postLike.getId().getUserId().equals(user.getUserId()));
     }
 }

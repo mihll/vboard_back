@@ -16,9 +16,9 @@ import com.mkierzkowski.vboard_back.model.token.TokenType;
 import com.mkierzkowski.vboard_back.model.user.InstitutionUser;
 import com.mkierzkowski.vboard_back.model.user.PersonUser;
 import com.mkierzkowski.vboard_back.model.user.User;
-import com.mkierzkowski.vboard_back.repository.InstitutionUserRepository;
-import com.mkierzkowski.vboard_back.repository.PersonUserRepository;
-import com.mkierzkowski.vboard_back.repository.UserRepository;
+import com.mkierzkowski.vboard_back.repository.user.InstitutionUserRepository;
+import com.mkierzkowski.vboard_back.repository.user.PersonUserRepository;
+import com.mkierzkowski.vboard_back.repository.user.UserRepository;
 import com.mkierzkowski.vboard_back.service.mail.OnRegistrationCompleteEvent;
 import com.mkierzkowski.vboard_back.service.mail.OnResetPasswordEvent;
 import com.mkierzkowski.vboard_back.service.storage.StorageService;
@@ -160,7 +160,7 @@ public class UserServiceImpl implements UserService {
             throw VBoardException.throwException(EntityType.PROFILE_PIC, ExceptionType.INVALID, "File is empty");
         }
 
-        String filename = storageService.store(profilePic, UUID.randomUUID().toString() + ".jpg", PROFILE_PICS.getPath());
+        String filename = storageService.store(profilePic, UUID.randomUUID() + ".jpg", PROFILE_PICS.getPath());
 
         User currentUser = getCurrentUser();
         currentUser.setProfilePicFilename(filename);

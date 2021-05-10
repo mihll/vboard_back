@@ -22,4 +22,7 @@ public class BoardPostResponseDto {
     Date createdDate;
     Date lastModifiedDate;
     Boolean isPinned;
+
+    Integer postLikesCount;
+    Boolean isLiked;
 }

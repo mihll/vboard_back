@@ -3,7 +3,7 @@ package com.mkierzkowski.vboard_back.security;
 import com.mkierzkowski.vboard_back.model.token.Token;
 import com.mkierzkowski.vboard_back.model.token.TokenType;
 import com.mkierzkowski.vboard_back.model.user.User;
-import com.mkierzkowski.vboard_back.repository.UserRepository;
+import com.mkierzkowski.vboard_back.repository.user.UserRepository;
 import com.mkierzkowski.vboard_back.service.token.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.DisabledException;

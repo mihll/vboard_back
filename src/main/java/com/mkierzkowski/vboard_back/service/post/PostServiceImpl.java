@@ -7,8 +7,10 @@ import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import com.mkierzkowski.vboard_back.model.post.Post;
+import com.mkierzkowski.vboard_back.model.post.PostLike;
 import com.mkierzkowski.vboard_back.model.user.User;
-import com.mkierzkowski.vboard_back.repository.PostRepository;
+import com.mkierzkowski.vboard_back.repository.post.PostLikeRepository;
+import com.mkierzkowski.vboard_back.repository.post.PostRepository;
 import com.mkierzkowski.vboard_back.service.board.BoardService;
 import com.mkierzkowski.vboard_back.service.user.UserService;
 import org.modelmapper.ModelMapper;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.List;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -30,12 +33,15 @@ public class PostServiceImpl implements PostService {
     PostRepository postRepository;
 
     @Autowired
+    PostLikeRepository postLikeRepository;
+
+    @Autowired
     ModelMapper modelMapper;
 
     @Override
     @Transactional
     public Post createPost(CreatePostRequestDto createPostRequestDto) {
-        BoardMember currentBoardMember = boardService.getBoardMemberOfCurrentUserForId(createPostRequestDto.getBoardId());
+        BoardMember currentBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(createPostRequestDto.getBoardId());
 
         Post postToCreate = new Post(currentBoardMember, createPostRequestDto.getPostText());
 
@@ -83,6 +89,46 @@ public class PostServiceImpl implements PostService {
         } else {
             throw VBoardException.throwException(EntityType.POST_PIN_REQUEST, ExceptionType.FORBIDDEN, currentUser.getUserId().toString(), postId.toString(), postToUnpin.getBoard().getBoardId().toString());
         }
+    }
+
+    @Override
+    public List<PostLike> likePost(Long postId) {
+        Post postToLike = getPostById(postId);
+
+        //checks if user is board member of board on which postToLike is posted
+        BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToLike.getBoard().getBoardId());
+
+        //checks if user did already like this post
+        if (postToLike.getPostLikes().stream()
+                .anyMatch(postLike -> postLike.getId().getUserId().equals(currentUserBoardMember.getId().getUserId()))) {
+            throw VBoardException.throwException(EntityType.POST_LIKE, ExceptionType.DUPLICATE_ENTITY, currentUserBoardMember.getUser().getUserId().toString(), postId.toString());
+        }
+
+        PostLike postLikeEntity = new PostLike(currentUserBoardMember.getUser(), postToLike);
+
+        postLikeRepository.saveAndFlush(postLikeEntity);
+
+        return postToLike.getPostLikes();
+    }
+
+    @Override
+    public List<PostLike> unlikePost(Long postId) {
+        Post postToUnlike = getPostById(postId);
+
+        //checks if user is board member of board on which postToLike is posted
+        BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToUnlike.getBoard().getBoardId());
+
+        //find current users post like of this post to delete
+        PostLike postLikeToDelete = postToUnlike.getPostLikes().stream()
+                .filter(postLike -> postLike.getId().getUserId().equals(currentUserBoardMember.getId().getUserId()))
+                .findAny()
+                .orElseThrow(() -> VBoardException.throwException(EntityType.POST_LIKE, ExceptionType.ENTITY_NOT_FOUND, currentUserBoardMember.getUser().getUserId().toString(), postId.toString()));
+
+        currentUserBoardMember.getUser().getUserPostLikes().remove(postLikeToDelete);
+        postToUnlike.getPostLikes().remove(postLikeToDelete);
+        postLikeRepository.delete(postLikeToDelete);
+
+        return postToUnlike.getPostLikes();
     }
 
     @Override
