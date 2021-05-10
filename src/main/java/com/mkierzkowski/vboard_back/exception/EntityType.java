@@ -12,6 +12,7 @@ public enum EntityType {
     BOARD_LIST,
     POST,
     POST_PIN_REQUEST,
+    POST_UPDATE_REQUEST,
     CURRENT_PASSWORD,
     FILE,
     PROFILE_PIC,

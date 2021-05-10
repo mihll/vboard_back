@@ -1,6 +1,7 @@
 package com.mkierzkowski.vboard_back.service.post;
 
 import com.mkierzkowski.vboard_back.dto.request.post.CreatePostRequestDto;
+import com.mkierzkowski.vboard_back.dto.request.post.UpdatePostRequestDto;
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
@@ -42,6 +43,21 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public void updatePost(Long postId, UpdatePostRequestDto updatePostRequestDto) {
+        Post postToUpdate = getPostById(postId);
+
+        User currentUser = userService.getCurrentUser();
+
+        if (isPostAuthor(postToUpdate, currentUser)) {
+            postToUpdate.setPostText(updatePostRequestDto.getPostText());
+
+            postRepository.saveAndFlush(postToUpdate);
+        } else {
+            throw VBoardException.throwException(EntityType.POST_UPDATE_REQUEST, ExceptionType.FORBIDDEN, currentUser.getUserId().toString(), postId.toString());
+        }
+    }
+
+    @Override
     public void pinPost(Long postId) {
         Post postToPin = getPostById(postId);
 
@@ -73,5 +89,9 @@ public class PostServiceImpl implements PostService {
     public Post getPostById(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> VBoardException.throwException(EntityType.POST, ExceptionType.ENTITY_NOT_FOUND, postId.toString()));
+    }
+
+    private boolean isPostAuthor(Post post, User user) {
+        return post.getBoardMember().getId().getUserId().equals(user.getUserId());
     }
 }
