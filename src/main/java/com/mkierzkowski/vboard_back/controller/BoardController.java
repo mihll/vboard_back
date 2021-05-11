@@ -16,13 +16,9 @@ import com.mkierzkowski.vboard_back.dto.response.board.my.links.GetMyBoardsLinks
 import com.mkierzkowski.vboard_back.dto.response.board.my.links.JoinedBoardLinkInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.requested.GetMyRequestedBoardsResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.requested.RequestedBoardInfoResponseDto;
-import com.mkierzkowski.vboard_back.dto.response.post.boardPosts.BoardPostResponseDto;
-import com.mkierzkowski.vboard_back.dto.response.post.boardPosts.GetBoardPostsResponseDto;
 import com.mkierzkowski.vboard_back.model.board.Board;
 import com.mkierzkowski.vboard_back.model.board.BoardJoinRequest;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
-import com.mkierzkowski.vboard_back.model.post.Post;
-import com.mkierzkowski.vboard_back.model.user.User;
 import com.mkierzkowski.vboard_back.service.board.BoardService;
 import com.mkierzkowski.vboard_back.service.user.UserService;
 import org.modelmapper.ModelMapper;
@@ -65,43 +61,6 @@ public class BoardController {
     public ResponseEntity<BoardInfoResponseDto> getBoardPublicInfo(@PathVariable Long boardId) {
         Board requestedBoard = boardService.getBoardById(boardId);
         BoardInfoResponseDto responseDto = modelMapper.map(requestedBoard, BoardInfoResponseDto.class);
-        return ResponseEntity.ok(responseDto);
-    }
-
-    @GetMapping("/{boardId:.+}/posts/all")
-    public ResponseEntity<GetBoardPostsResponseDto> getAllBoardPosts(@PathVariable Long boardId) {
-        List<Post> boardPosts = boardService.getBoardPosts(boardId);
-        User currentUser = userService.getCurrentUser();
-        GetBoardPostsResponseDto responseDto = new GetBoardPostsResponseDto();
-
-        responseDto.setPosts(boardPosts
-                .stream()
-                .map(boardPost -> {
-                    BoardPostResponseDto boardPostResponseDto = modelMapper.map(boardPost, BoardPostResponseDto.class);
-                    boardPostResponseDto.setIsLiked(boardPost.isLikedByUser(currentUser));
-                    return boardPostResponseDto;
-                })
-                .collect(Collectors.toList()));
-
-        return ResponseEntity.ok(responseDto);
-    }
-
-    @GetMapping("/{boardId:.+}/posts/pinned")
-    public ResponseEntity<GetBoardPostsResponseDto> getPinnedBoardPosts(@PathVariable Long boardId) {
-        List<Post> boardPosts = boardService.getBoardPosts(boardId);
-        User currentUser = userService.getCurrentUser();
-        GetBoardPostsResponseDto responseDto = new GetBoardPostsResponseDto();
-
-        responseDto.setPosts(boardPosts
-                .stream()
-                .filter(Post::getIsPinned)
-                .map(boardPost -> {
-                    BoardPostResponseDto boardPostResponseDto = modelMapper.map(boardPost, BoardPostResponseDto.class);
-                    boardPostResponseDto.setIsLiked(boardPost.isLikedByUser(currentUser));
-                    return boardPostResponseDto;
-                })
-                .collect(Collectors.toList()));
-
         return ResponseEntity.ok(responseDto);
     }
 

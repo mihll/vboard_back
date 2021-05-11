@@ -5,6 +5,7 @@ import com.mkierzkowski.vboard_back.dto.request.post.UpdatePostRequestDto;
 import com.mkierzkowski.vboard_back.dto.response.post.CreatePostResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.post.LikePostResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.post.boardPosts.BoardPostResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.post.boardPosts.GetBoardPostsResponseDto;
 import com.mkierzkowski.vboard_back.model.post.Post;
 import com.mkierzkowski.vboard_back.model.post.PostLike;
 import com.mkierzkowski.vboard_back.model.user.User;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/post")
@@ -53,6 +55,39 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/board/{boardId:.+}/all")
+    public ResponseEntity<GetBoardPostsResponseDto> getAllBoardPosts(@PathVariable Long boardId, @RequestParam Integer page,
+                                                                     @RequestParam(required = false) String sortBy,
+                                                                     @RequestParam(required = false) String direction) {
+        List<Post> allBoardPosts = postService.getAllBoardPosts(boardId, page, sortBy, direction);
+        GetBoardPostsResponseDto responseDto = preparePostsResponse(allBoardPosts);
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/board/{boardId:.+}/pinned")
+    public ResponseEntity<GetBoardPostsResponseDto> getPinnedBoardPosts(@PathVariable Long boardId) {
+        List<Post> pinnedBoardPosts = postService.getPinnedBoardPosts(boardId);
+        GetBoardPostsResponseDto responseDto = preparePostsResponse(pinnedBoardPosts);
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    private GetBoardPostsResponseDto preparePostsResponse(List<Post> postList) {
+        User currentUser = userService.getCurrentUser();
+        GetBoardPostsResponseDto responseDto = new GetBoardPostsResponseDto();
+
+        responseDto.setPosts(postList
+                .stream()
+                .map(boardPost -> {
+                    BoardPostResponseDto boardPostResponseDto = modelMapper.map(boardPost, BoardPostResponseDto.class);
+                    boardPostResponseDto.setIsLiked(boardPost.isLikedByUser(currentUser));
+                    return boardPostResponseDto;
+                })
+                .collect(Collectors.toList()));
+
+        return responseDto;
+    }
 
     @PutMapping("/{postId:.+}/pin")
     public ResponseEntity<?> pinPost(@PathVariable Long postId) {

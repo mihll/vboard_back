@@ -13,6 +13,10 @@ public interface PostService {
 
     void updatePost(Long postId, UpdatePostRequestDto updatePostRequestDto);
 
+    List<Post> getAllBoardPosts(Long boardId, Integer page, String sortBy, String direction);
+
+    List<Post> getPinnedBoardPosts(Long boardId);
+
     void pinPost(Long postId);
 
     void unpinPost(Long postId);

@@ -15,6 +15,10 @@ import com.mkierzkowski.vboard_back.service.board.BoardService;
 import com.mkierzkowski.vboard_back.service.user.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.auditing.AuditingHandler;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -37,6 +41,9 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     ModelMapper modelMapper;
+
+    @Autowired
+    AuditingHandler auditingHandler;
 
     @Override
     @Transactional
@@ -61,6 +68,42 @@ public class PostServiceImpl implements PostService {
         } else {
             throw VBoardException.throwException(EntityType.POST_UPDATE_REQUEST, ExceptionType.FORBIDDEN, currentUser.getUserId().toString(), postId.toString());
         }
+    }
+
+    @Override
+    public List<Post> getAllBoardPosts(Long boardId, Integer page, String sortBy, String direction) {
+        // checks if user is member of requested board
+        BoardMember currentBoardMemberForBoardId = boardService.getBoardMemberOfCurrentUserForBoardId(boardId);
+        Pageable pageRequest;
+        if (!sortBy.isEmpty() && !direction.isEmpty()) {
+            if (sortBy.equals("postDate")) {
+                sortBy = "createdDate";
+            } else if (sortBy.equals("lastActivity")) {
+                sortBy = "lastModifiedDate";
+            } else {
+                throw VBoardException.throwException(EntityType.POST, ExceptionType.INVALID, "sortBy = " + sortBy);
+            }
+
+            if (direction.equals("asc")) {
+                pageRequest = PageRequest.of(page, 10, Sort.by(sortBy).ascending());
+            } else if (direction.equals("desc")) {
+                pageRequest = PageRequest.of(page, 10, Sort.by(sortBy).descending());
+            } else {
+                throw VBoardException.throwException(EntityType.POST, ExceptionType.INVALID, "direction = " + direction);
+            }
+
+        } else {
+            pageRequest = PageRequest.of(page, 10, Sort.by("lastModifiedDate").descending());
+        }
+
+        return postRepository.findAllByBoard(currentBoardMemberForBoardId.getBoard(), pageRequest);
+    }
+
+    @Override
+    public List<Post> getPinnedBoardPosts(Long boardId) {
+        // checks if user is member of requested board
+        BoardMember currentBoardMemberForBoardId = boardService.getBoardMemberOfCurrentUserForBoardId(boardId);
+        return postRepository.findAllByBoardAndIsPinned(currentBoardMemberForBoardId.getBoard(), true);
     }
 
     @Override
@@ -108,6 +151,9 @@ public class PostServiceImpl implements PostService {
 
         postLikeRepository.saveAndFlush(postLikeEntity);
 
+        auditingHandler.markModified(postToLike);
+        postRepository.save(postToLike);
+
         return postToLike.getPostLikes();
     }
 
@@ -127,6 +173,9 @@ public class PostServiceImpl implements PostService {
         currentUserBoardMember.getUser().getUserPostLikes().remove(postLikeToDelete);
         postToUnlike.getPostLikes().remove(postLikeToDelete);
         postLikeRepository.delete(postLikeToDelete);
+
+        auditingHandler.markModified(postToUnlike);
+        postRepository.save(postToUnlike);
 
         return postToUnlike.getPostLikes();
     }
