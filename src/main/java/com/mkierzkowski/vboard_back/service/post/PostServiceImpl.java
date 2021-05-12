@@ -100,6 +100,35 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public List<Post> getBoardPostsContainingText(Long boardId, Integer page, String sortBy, String direction, String searchText) {
+        // checks if user is member of requested board
+        BoardMember currentBoardMemberForBoardId = boardService.getBoardMemberOfCurrentUserForBoardId(boardId);
+        Pageable pageRequest;
+        if (!sortBy.isEmpty() && !direction.isEmpty()) {
+            if (sortBy.equals("postDate")) {
+                sortBy = "createdDate";
+            } else if (sortBy.equals("lastActivity")) {
+                sortBy = "lastModifiedDate";
+            } else {
+                throw VBoardException.throwException(EntityType.POST, ExceptionType.INVALID, "sortBy = " + sortBy);
+            }
+
+            if (direction.equals("asc")) {
+                pageRequest = PageRequest.of(page, 10, Sort.by(sortBy).ascending());
+            } else if (direction.equals("desc")) {
+                pageRequest = PageRequest.of(page, 10, Sort.by(sortBy).descending());
+            } else {
+                throw VBoardException.throwException(EntityType.POST, ExceptionType.INVALID, "direction = " + direction);
+            }
+
+        } else {
+            pageRequest = PageRequest.of(page, 10, Sort.by("lastModifiedDate").descending());
+        }
+
+        return postRepository.findAllByBoardAndPostTextContainingIgnoreCase(currentBoardMemberForBoardId.getBoard(), pageRequest, searchText);
+    }
+
+    @Override
     public List<Post> getPinnedBoardPosts(Long boardId) {
         // checks if user is member of requested board
         BoardMember currentBoardMemberForBoardId = boardService.getBoardMemberOfCurrentUserForBoardId(boardId);

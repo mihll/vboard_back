@@ -15,6 +15,8 @@ public interface PostService {
 
     List<Post> getAllBoardPosts(Long boardId, Integer page, String sortBy, String direction);
 
+    List<Post> getBoardPostsContainingText(Long boardId, Integer page, String sortBy, String direction, String searchText);
+
     List<Post> getPinnedBoardPosts(Long boardId);
 
     void pinPost(Long postId);

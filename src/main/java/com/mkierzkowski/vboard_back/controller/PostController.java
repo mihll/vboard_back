@@ -57,10 +57,21 @@ public class PostController {
 
     @GetMapping("/board/{boardId:.+}/all")
     public ResponseEntity<GetBoardPostsResponseDto> getAllBoardPosts(@PathVariable Long boardId, @RequestParam Integer page,
-                                                                     @RequestParam(required = false) String sortBy,
-                                                                     @RequestParam(required = false) String direction) {
+                                                                     @RequestParam String sortBy,
+                                                                     @RequestParam String direction) {
         List<Post> allBoardPosts = postService.getAllBoardPosts(boardId, page, sortBy, direction);
         GetBoardPostsResponseDto responseDto = preparePostsResponse(allBoardPosts);
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/board/{boardId:.+}/search")
+    public ResponseEntity<GetBoardPostsResponseDto> getAllBoardPosts(@PathVariable Long boardId, @RequestParam Integer page,
+                                                                     @RequestParam String sortBy,
+                                                                     @RequestParam String direction,
+                                                                     @RequestParam String searchText) {
+        List<Post> foundBoardPosts = postService.getBoardPostsContainingText(boardId, page, sortBy, direction, searchText);
+        GetBoardPostsResponseDto responseDto = preparePostsResponse(foundBoardPosts);
 
         return ResponseEntity.ok(responseDto);
     }
