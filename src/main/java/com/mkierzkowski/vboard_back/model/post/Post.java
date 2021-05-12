@@ -47,6 +47,9 @@ public class Post extends Auditable<String> {
     @OneToMany(mappedBy = "post")
     List<PostLike> postLikes;
 
+    @OneToMany(mappedBy = "post")
+    List<PostComment> postComments;
+
     public Post(BoardMember boardMember, String postText) {
         this.boardMember = boardMember;
         this.board = boardMember.getBoard();
@@ -62,6 +65,10 @@ public class Post extends Auditable<String> {
 
     public int getPostLikesCount() {
         return postLikes.size();
+    }
+
+    public int getPostCommentsCount() {
+        return postComments.size();
     }
 
     public boolean isLikedByUser(User user) {

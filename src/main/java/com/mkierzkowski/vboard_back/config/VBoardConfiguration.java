@@ -8,12 +8,14 @@ import com.mkierzkowski.vboard_back.dto.response.board.my.MyBoardInfoResponseDto
 import com.mkierzkowski.vboard_back.dto.response.board.my.links.JoinedBoardLinkInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.board.my.requested.RequestedBoardInfoResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.post.boardPosts.BoardPostResponseDto;
+import com.mkierzkowski.vboard_back.dto.response.post.postComments.PostCommentResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.user.InstitutionUserResponseDto;
 import com.mkierzkowski.vboard_back.dto.response.user.PersonUserResponseDto;
 import com.mkierzkowski.vboard_back.model.board.Board;
 import com.mkierzkowski.vboard_back.model.board.BoardJoinRequest;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import com.mkierzkowski.vboard_back.model.post.Post;
+import com.mkierzkowski.vboard_back.model.post.PostComment;
 import com.mkierzkowski.vboard_back.model.user.InstitutionUser;
 import com.mkierzkowski.vboard_back.model.user.PersonUser;
 import org.modelmapper.ModelMapper;
@@ -93,6 +95,11 @@ public class VBoardConfiguration {
             mapper.map(src -> src.getBoardMember().getUser().getUserId(), BoardPostResponseDto::setUserId);
             mapper.map(src -> src.getBoardMember().getUser().getName(), BoardPostResponseDto::setUserName);
             mapper.map(Post::getPostId, BoardPostResponseDto::setPostId);
+        });
+
+        modelMapper.typeMap(PostComment.class, PostCommentResponseDto.class).addMappings(mapper -> {
+            mapper.map(src -> src.getUser().getUserId(), PostCommentResponseDto::setUserId);
+            mapper.map(PostComment::getCommentId, PostCommentResponseDto::setCommentId);
         });
 
         return modelMapper;

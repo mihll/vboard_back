@@ -14,6 +14,7 @@ public enum EntityType {
     POST_PIN_REQUEST,
     POST_UPDATE_REQUEST,
     POST_LIKE,
+    POST_COMMENT,
     CURRENT_PASSWORD,
     FILE,
     PROFILE_PIC,

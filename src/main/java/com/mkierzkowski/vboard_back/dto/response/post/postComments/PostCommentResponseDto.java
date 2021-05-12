@@ -1,4 +1,4 @@
-package com.mkierzkowski.vboard_back.dto.response.post.boardPosts;
+package com.mkierzkowski.vboard_back.dto.response.post.postComments;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
@@ -11,20 +11,12 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BoardPostResponseDto {
+public class PostCommentResponseDto {
     String userId;
     String userName;
     String profilePicUrl;
-    Boolean isAdmin;
 
-    String postId;
-    String postText;
+    String commentId;
+    String commentText;
     Date createdDate;
-    Date lastModifiedDate;
-    Boolean isPinned;
-
-    Integer postLikesCount;
-    Boolean isLiked;
-
-    Integer postCommentsCount;
 }

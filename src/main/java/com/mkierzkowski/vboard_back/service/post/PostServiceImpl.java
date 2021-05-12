@@ -1,5 +1,6 @@
 package com.mkierzkowski.vboard_back.service.post;
 
+import com.mkierzkowski.vboard_back.dto.request.post.CommentPostRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.post.CreatePostRequestDto;
 import com.mkierzkowski.vboard_back.dto.request.post.UpdatePostRequestDto;
 import com.mkierzkowski.vboard_back.exception.EntityType;
@@ -7,8 +8,10 @@ import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import com.mkierzkowski.vboard_back.model.post.Post;
+import com.mkierzkowski.vboard_back.model.post.PostComment;
 import com.mkierzkowski.vboard_back.model.post.PostLike;
 import com.mkierzkowski.vboard_back.model.user.User;
+import com.mkierzkowski.vboard_back.repository.post.PostCommentRepository;
 import com.mkierzkowski.vboard_back.repository.post.PostLikeRepository;
 import com.mkierzkowski.vboard_back.repository.post.PostRepository;
 import com.mkierzkowski.vboard_back.service.board.BoardService;
@@ -38,6 +41,9 @@ public class PostServiceImpl implements PostService {
 
     @Autowired
     PostLikeRepository postLikeRepository;
+
+    @Autowired
+    PostCommentRepository postCommentRepository;
 
     @Autowired
     ModelMapper modelMapper;
@@ -210,9 +216,63 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public List<PostComment> getPostComments(Long postId, Integer page) {
+        Post requestedPost = getPostById(postId);
+
+        //checks if user is board member of board on which postToLike is posted
+        boardService.getBoardMemberOfCurrentUserForBoardId(requestedPost.getBoard().getBoardId());
+
+        PageRequest pageRequest = PageRequest.of(page, 5, Sort.by("createdDate").descending());
+
+        return postCommentRepository.findAllByPost(requestedPost, pageRequest);
+    }
+
+    @Override
+    public List<PostComment> commentPost(Long postId, CommentPostRequestDto commentPostRequestDto) {
+        Post postToComment = getPostById(postId);
+
+        //checks if user is board member of board on which postToLike is posted
+        BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToComment.getBoard().getBoardId());
+
+        PostComment postCommentEntity = new PostComment(postToComment, currentUserBoardMember.getUser(), commentPostRequestDto.getCommentText());
+
+        postCommentRepository.saveAndFlush(postCommentEntity);
+
+        auditingHandler.markModified(postToComment);
+        postRepository.save(postToComment);
+
+        PageRequest pageRequest = PageRequest.of(0, 5, Sort.by("createdDate").descending());
+
+        return postCommentRepository.findAllByPost(postToComment, pageRequest);
+    }
+
+    @Override
+    public List<PostComment> deleteComment(Long postId, Long commentId) {
+        Post postToUpdate = getPostById(postId);
+        PostComment commentToDelete = getCommentById(commentId);
+
+        //checks if user is board member of board on which postToLike is posted
+        BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToUpdate.getBoard().getBoardId());
+
+        if (commentToDelete.getUser().equals(currentUserBoardMember.getUser())) {
+            postCommentRepository.delete(commentToDelete);
+
+            PageRequest pageRequest = PageRequest.of(0, 5, Sort.by("createdDate").descending());
+            return postCommentRepository.findAllByPost(postToUpdate, pageRequest);
+        } else {
+            throw VBoardException.throwException(EntityType.POST_COMMENT, ExceptionType.FORBIDDEN, currentUserBoardMember.getUser().getUserId().toString(), commentId.toString());
+        }
+    }
+
+    @Override
     public Post getPostById(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> VBoardException.throwException(EntityType.POST, ExceptionType.ENTITY_NOT_FOUND, postId.toString()));
+    }
+
+    private PostComment getCommentById(Long commentId) {
+        return postCommentRepository.findById(commentId)
+                .orElseThrow(() -> VBoardException.throwException(EntityType.POST_COMMENT, ExceptionType.ENTITY_NOT_FOUND, commentId.toString()));
     }
 
     private boolean isPostAuthor(Post post, User user) {
