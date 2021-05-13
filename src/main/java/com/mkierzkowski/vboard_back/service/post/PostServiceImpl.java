@@ -182,7 +182,7 @@ public class PostServiceImpl implements PostService {
             throw VBoardException.throwException(EntityType.POST_LIKE, ExceptionType.DUPLICATE_ENTITY, currentUserBoardMember.getUser().getUserId().toString(), postId.toString());
         }
 
-        PostLike postLikeEntity = new PostLike(currentUserBoardMember.getUser(), postToLike);
+        PostLike postLikeEntity = new PostLike(currentUserBoardMember, postToLike);
 
         postLikeRepository.saveAndFlush(postLikeEntity);
 
@@ -205,7 +205,7 @@ public class PostServiceImpl implements PostService {
                 .findAny()
                 .orElseThrow(() -> VBoardException.throwException(EntityType.POST_LIKE, ExceptionType.ENTITY_NOT_FOUND, currentUserBoardMember.getUser().getUserId().toString(), postId.toString()));
 
-        currentUserBoardMember.getUser().getUserPostLikes().remove(postLikeToDelete);
+        currentUserBoardMember.getMemberPostLikes().remove(postLikeToDelete);
         postToUnlike.getPostLikes().remove(postLikeToDelete);
         postLikeRepository.delete(postLikeToDelete);
 
@@ -234,7 +234,7 @@ public class PostServiceImpl implements PostService {
         //checks if user is board member of board on which postToLike is posted
         BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToComment.getBoard().getBoardId());
 
-        PostComment postCommentEntity = new PostComment(postToComment, currentUserBoardMember.getUser(), commentPostRequestDto.getCommentText());
+        PostComment postCommentEntity = new PostComment(postToComment, currentUserBoardMember, commentPostRequestDto.getCommentText());
 
         postCommentRepository.saveAndFlush(postCommentEntity);
 
@@ -254,7 +254,7 @@ public class PostServiceImpl implements PostService {
         //checks if user is board member of board on which postToLike is posted
         BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToUpdate.getBoard().getBoardId());
 
-        if (commentToDelete.getUser().equals(currentUserBoardMember.getUser())) {
+        if (commentToDelete.getBoardMember().equals(currentUserBoardMember)) {
             postCommentRepository.delete(commentToDelete);
 
             PageRequest pageRequest = PageRequest.of(0, 5, Sort.by("createdDate").descending());

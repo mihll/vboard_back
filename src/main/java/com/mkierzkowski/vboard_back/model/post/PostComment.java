@@ -1,7 +1,7 @@
 package com.mkierzkowski.vboard_back.model.post;
 
 import com.mkierzkowski.vboard_back.config.auditing.Auditable;
-import com.mkierzkowski.vboard_back.model.user.User;
+import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -27,19 +27,22 @@ public class PostComment extends Auditable<String> {
     Post post;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    User user;
+    @JoinColumns({
+            @JoinColumn(name = "board_id"),
+            @JoinColumn(name = "user_id"),
+    })
+    BoardMember boardMember;
 
     @NotBlank
     @Column(name = "commentText", columnDefinition = "LONGTEXT")
     String commentText;
 
-    public PostComment(Post post, User user, String commentText) {
+    public PostComment(Post post, BoardMember boardMember, String commentText) {
         this.post = post;
-        this.user = user;
+        this.boardMember = boardMember;
         this.commentText = commentText;
 
-        user.getUserPostComments().add(this);
+        boardMember.getMemberPostComments().add(this);
         post.getPostComments().add(this);
     }
 

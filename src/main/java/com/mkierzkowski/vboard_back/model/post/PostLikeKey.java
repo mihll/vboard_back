@@ -12,11 +12,15 @@ public class PostLikeKey implements Serializable {
     @Column(name = "user_id")
     Long userId;
 
+    @Column(name = "board_id")
+    Long boardId;
+
     @Column(name = "post_id")
     Long postId;
 
-    public PostLikeKey(Long userId, Long postId) {
+    public PostLikeKey(Long userId, Long boardId, Long postId) {
         this.userId = userId;
+        this.boardId = boardId;
         this.postId = postId;
     }
 

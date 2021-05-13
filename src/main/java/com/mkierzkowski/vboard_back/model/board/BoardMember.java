@@ -2,6 +2,8 @@ package com.mkierzkowski.vboard_back.model.board;
 
 import com.mkierzkowski.vboard_back.config.auditing.Auditable;
 import com.mkierzkowski.vboard_back.model.post.Post;
+import com.mkierzkowski.vboard_back.model.post.PostComment;
+import com.mkierzkowski.vboard_back.model.post.PostLike;
 import com.mkierzkowski.vboard_back.model.user.User;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -36,6 +38,12 @@ public class BoardMember extends Auditable<String> {
 
     @OneToMany(mappedBy = "boardMember")
     List<Post> memberPosts;
+
+    @OneToMany(mappedBy = "boardMember")
+    List<PostLike> memberPostLikes;
+
+    @OneToMany(mappedBy = "boardMember")
+    List<PostComment> memberPostComments;
 
     Integer orderIndex;
 

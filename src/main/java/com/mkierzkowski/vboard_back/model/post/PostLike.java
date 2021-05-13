@@ -1,17 +1,14 @@
 package com.mkierzkowski.vboard_back.model.post;
 
 import com.mkierzkowski.vboard_back.config.auditing.Auditable;
-import com.mkierzkowski.vboard_back.model.user.User;
+import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -24,20 +21,23 @@ public class PostLike extends Auditable<String> {
     PostLikeKey id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
-    User user;
+    @JoinColumns({
+            @JoinColumn(name = "board_id", insertable = false, updatable = false),
+            @JoinColumn(name = "user_id", insertable = false, updatable = false),
+    })
+    BoardMember boardMember;
 
     @ManyToOne
     @JoinColumn(name = "post_id", insertable = false, updatable = false)
     Post post;
 
-    public PostLike(User user, Post post) {
-        this.id = new PostLikeKey(user.getUserId(), post.getPostId());
+    public PostLike(BoardMember boardMember, Post post) {
+        this.id = new PostLikeKey(boardMember.getId().getUserId(), boardMember.getId().getBoardId(), post.getPostId());
 
-        this.user = user;
+        this.boardMember = boardMember;
         this.post = post;
 
-        user.getUserPostLikes().add(this);
+        boardMember.getMemberPostLikes().add(this);
         post.getPostLikes().add(this);
     }
 

@@ -98,7 +98,7 @@ public class VBoardConfiguration {
         });
 
         modelMapper.typeMap(PostComment.class, PostCommentResponseDto.class).addMappings(mapper -> {
-            mapper.map(src -> src.getUser().getUserId(), PostCommentResponseDto::setUserId);
+            mapper.map(src -> src.getBoardMember().getId().getUserId(), PostCommentResponseDto::setUserId);
             mapper.map(PostComment::getCommentId, PostCommentResponseDto::setCommentId);
         });
 
