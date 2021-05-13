@@ -44,10 +44,10 @@ public class Post extends Auditable<String> {
     @Column(name = "postText", columnDefinition = "LONGTEXT")
     String postText;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
     List<PostLike> postLikes;
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", orphanRemoval = true)
     List<PostComment> postComments;
 
     public Post(BoardMember boardMember, String postText) {

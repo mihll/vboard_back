@@ -54,6 +54,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public Post createPost(CreatePostRequestDto createPostRequestDto) {
+        // checks if user is member of requested board
         BoardMember currentBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(createPostRequestDto.getBoardId());
 
         Post postToCreate = new Post(currentBoardMember, createPostRequestDto.getPostText());
@@ -65,14 +66,30 @@ public class PostServiceImpl implements PostService {
     public void updatePost(Long postId, UpdatePostRequestDto updatePostRequestDto) {
         Post postToUpdate = getPostById(postId);
 
-        User currentUser = userService.getCurrentUser();
+        // checks if user is member of requested board
+        BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToUpdate.getBoard().getBoardId());
 
-        if (isPostAuthor(postToUpdate, currentUser)) {
+        if (isPostAuthor(postToUpdate, currentUserBoardMember)) {
             postToUpdate.setPostText(updatePostRequestDto.getPostText());
 
             postRepository.saveAndFlush(postToUpdate);
         } else {
-            throw VBoardException.throwException(EntityType.POST_UPDATE_REQUEST, ExceptionType.FORBIDDEN, currentUser.getUserId().toString(), postId.toString());
+            throw VBoardException.throwException(EntityType.POST, ExceptionType.FORBIDDEN, currentUserBoardMember.getId().getUserId().toString(), postId.toString());
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deletePost(Long postId) {
+        Post postToDelete = getPostById(postId);
+
+        // checks if user is member of requested board
+        BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToDelete.getBoard().getBoardId());
+
+        if (currentUserBoardMember.getIsAdmin() || isPostAuthor(postToDelete, currentUserBoardMember)) {
+            postRepository.delete(postToDelete);
+        } else {
+            throw VBoardException.throwException(EntityType.POST, ExceptionType.FORBIDDEN, currentUserBoardMember.getId().getUserId().toString(), postId.toString());
         }
     }
 
@@ -275,7 +292,7 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> VBoardException.throwException(EntityType.POST_COMMENT, ExceptionType.ENTITY_NOT_FOUND, commentId.toString()));
     }
 
-    private boolean isPostAuthor(Post post, User user) {
-        return post.getBoardMember().getId().getUserId().equals(user.getUserId());
+    private boolean isPostAuthor(Post post, BoardMember boardMember) {
+        return post.getBoardMember().equals(boardMember);
     }
 }

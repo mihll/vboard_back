@@ -15,6 +15,8 @@ public interface PostService {
 
     void updatePost(Long postId, UpdatePostRequestDto updatePostRequestDto);
 
+    void deletePost(Long postId);
+
     List<Post> getAllBoardPosts(Long boardId, Integer page, String sortBy, String direction);
 
     List<Post> getBoardPostsContainingText(Long boardId, Integer page, String sortBy, String direction, String searchText);

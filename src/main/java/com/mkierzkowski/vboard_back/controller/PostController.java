@@ -59,6 +59,12 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/{postId:.+}")
+    public ResponseEntity<?> deletePost(@PathVariable Long postId) {
+        postService.deletePost(postId);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/board/{boardId:.+}/all")
     public ResponseEntity<GetBoardPostsResponseDto> getAllBoardPosts(@PathVariable Long boardId, @RequestParam Integer page,
                                                                      @RequestParam String sortBy,
