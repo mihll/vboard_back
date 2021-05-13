@@ -46,13 +46,13 @@ public class Board extends Auditable<String> {
 
     String addressStreet;
 
-    @OneToMany(mappedBy = "board")
+    @OneToMany(mappedBy = "board", orphanRemoval = true)
     List<BoardMember> boardMembers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "board")
-    List<BoardJoinRequest> boardJoinRequests = new ArrayList<>();
+    @OneToMany(mappedBy = "board", orphanRemoval = true)
+    List<BoardJoinRequest> boardJoinRequests;
 
-    @OneToMany(mappedBy = "board")
+    @OneToMany(mappedBy = "board", orphanRemoval = true)
     List<Post> boardPosts;
 
     public Stream<BoardMember> getAdmins() {

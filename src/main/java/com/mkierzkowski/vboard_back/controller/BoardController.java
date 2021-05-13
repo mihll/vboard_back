@@ -57,6 +57,12 @@ public class BoardController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @DeleteMapping("/{boardId:.+}")
+    public ResponseEntity<?> deleteBoard(@PathVariable Long boardId) {
+        boardService.deleteBoard(boardId);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/{boardId:.+}/publicInfo")
     public ResponseEntity<BoardInfoResponseDto> getBoardPublicInfo(@PathVariable Long boardId) {
         Board requestedBoard = boardService.getBoardById(boardId);
@@ -124,6 +130,12 @@ public class BoardController {
     @PostMapping("/{boardId:.+}/leave")
     public ResponseEntity<?> leaveBoard(@PathVariable Long boardId, @RequestParam Long userId) {
         boardService.leaveBoard(boardId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{boardId:.+}/deleteMember")
+    public ResponseEntity<?> deleteBoardMember(@PathVariable Long boardId, @RequestParam Long userId) {
+        boardService.deleteBoardMember(boardId, userId);
         return ResponseEntity.ok().build();
     }
 

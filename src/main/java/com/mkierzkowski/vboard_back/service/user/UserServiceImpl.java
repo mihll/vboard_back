@@ -11,6 +11,7 @@ import com.mkierzkowski.vboard_back.dto.request.userpassword.UserPasswordResetRe
 import com.mkierzkowski.vboard_back.exception.EntityType;
 import com.mkierzkowski.vboard_back.exception.ExceptionType;
 import com.mkierzkowski.vboard_back.exception.VBoardException;
+import com.mkierzkowski.vboard_back.model.board.BoardMember;
 import com.mkierzkowski.vboard_back.model.token.Token;
 import com.mkierzkowski.vboard_back.model.token.TokenType;
 import com.mkierzkowski.vboard_back.model.user.InstitutionUser;
@@ -131,6 +132,23 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new RuntimeException(userUpdateRequestDto.getClass().getSimpleName() + " handling is not implemented yet!");
         }
+    }
+
+    @Override
+    @Transactional
+    public void deleteUserAccount() {
+        User currentUser = getCurrentUser();
+
+        // checks if user is admin of any board
+        if (currentUser.getJoinedBoards().stream()
+                .anyMatch(BoardMember::getIsAdmin)) {
+            throw VBoardException.throwException(EntityType.USER_DELETE_REQUEST, ExceptionType.FAILED);
+        }
+
+        // deleting user profile picture
+        storageService.delete(currentUser.getProfilePicFilename(), PROFILE_PICS.getPath());
+
+        userRepository.delete(currentUser);
     }
 
     @Override

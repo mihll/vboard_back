@@ -94,6 +94,19 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional
+    public void deleteBoard(Long boardId) {
+        Board boardToDelete = getBoardById(boardId);
+        User currentUser = userService.getCurrentUser();
+
+        if (isBoardAdmin(boardToDelete, currentUser)) {
+            boardRepository.delete(boardToDelete);
+        } else {
+            throw VBoardException.throwException(EntityType.BOARD_DELETE_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
+        }
+    }
+
+    @Override
+    @Transactional
     public BoardInfoResponseDto requestBoardJoin(Long boardId) {
         Board boardToJoin = getBoardById(boardId);
 
@@ -234,6 +247,26 @@ public class BoardServiceImpl implements BoardService {
 
         } else {
             throw VBoardException.throwException(EntityType.BOARD_LEAVE_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteBoardMember(Long boardId, Long userId) {
+        Board requestedBoard = getBoardById(boardId);
+
+        User currentUser = userService.getCurrentUser();
+
+        if (isBoardAdmin(requestedBoard, currentUser)) {
+            //checks if user to delete is a member of requested board
+            BoardMember boardMemberToDelete = getBoardMembers(boardId).stream()
+                    .filter(boardMember -> boardMember.getId().getUserId().equals(userId))
+                    .findAny()
+                    .orElseThrow(() -> VBoardException.throwException(EntityType.BOARD_MEMBER_DELETE_REQUEST, ExceptionType.INVALID, userId.toString(), boardId.toString()));
+
+            boardMemberRepository.delete(boardMemberToDelete);
+        } else {
+            throw VBoardException.throwException(EntityType.BOARD_MEMBER_DELETE_REQUEST, ExceptionType.FORBIDDEN, boardId.toString());
         }
     }
 

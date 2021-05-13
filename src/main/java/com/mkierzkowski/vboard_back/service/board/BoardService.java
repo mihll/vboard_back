@@ -17,6 +17,8 @@ public interface BoardService {
 
     Board updateBoard(Long boardId, UpdateBoardRequestDto updateBoardRequestDto);
 
+    void deleteBoard(Long boardId);
+
     BoardInfoResponseDto requestBoardJoin(Long boardId);
 
     void acceptJoinRequest(Long boardId, Long userId);
@@ -26,6 +28,8 @@ public interface BoardService {
     void revertBoardJoin(Long boardId);
 
     void leaveBoard(Long boardId, Long userId);
+
+    void deleteBoardMember(Long boardId, Long userId);
 
     void restoreBoardMember(Long boardId, Long userId);
 

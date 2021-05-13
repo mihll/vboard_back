@@ -51,11 +51,11 @@ public class User extends Auditable<String> implements UserDetails {
     @NotNull
     boolean enabled;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
     @OrderColumn(name = "orderIndex")
     List<BoardMember> joinedBoards = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
     List<BoardJoinRequest> requestedBoards = new ArrayList<>();
 
     public String getName() {

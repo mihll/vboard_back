@@ -45,6 +45,12 @@ public class UserController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @DeleteMapping("/me")
+    public ResponseEntity<?> deleteUserAccount() {
+        userService.deleteUserAccount();
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/changeProfilePic")
     public ResponseEntity<UserResponseDto> changeProfilePic(@RequestParam(value = "profilePic", required = false) MultipartFile profilePic) {
         User updatedUser = userService.changeProfilePic(profilePic);

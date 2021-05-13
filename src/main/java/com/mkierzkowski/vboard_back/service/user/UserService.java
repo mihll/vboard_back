@@ -13,6 +13,8 @@ public interface UserService {
 
     User update(AbstractUserUpdateRequestDto userUpdateRequestDto);
 
+    void deleteUserAccount();
+
     User changeProfilePic(MultipartFile profilePic);
 
     User resetProfilePicToDefault();

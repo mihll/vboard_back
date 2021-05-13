@@ -36,13 +36,13 @@ public class BoardMember extends Auditable<String> {
     @JoinColumn(name = "board_id", insertable = false, updatable = false)
     Board board;
 
-    @OneToMany(mappedBy = "boardMember")
+    @OneToMany(mappedBy = "boardMember", orphanRemoval = true)
     List<Post> memberPosts;
 
-    @OneToMany(mappedBy = "boardMember")
+    @OneToMany(mappedBy = "boardMember", orphanRemoval = true)
     List<PostLike> memberPostLikes;
 
-    @OneToMany(mappedBy = "boardMember")
+    @OneToMany(mappedBy = "boardMember", orphanRemoval = true)
     List<PostComment> memberPostComments;
 
     Integer orderIndex;
