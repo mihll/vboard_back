@@ -64,7 +64,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/signup/confirm")
+    @PostMapping("/signup/confirm")
     public ResponseEntity<?> confirm(@RequestParam("token") String token) {
         userService.verifyUserForToken(token);
         return ResponseEntity.ok().build();

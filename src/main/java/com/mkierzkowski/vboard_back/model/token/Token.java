@@ -23,12 +23,12 @@ public class Token extends Auditable<String> {
 
     @Id
     @GeneratedValue
-    Long id;
+    Long tokenId;
 
     String token;
 
-    @OneToOne(targetEntity = User.class, fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "user_id")
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     User user;
 
     Date expiryDate;
@@ -41,6 +41,8 @@ public class Token extends Auditable<String> {
         this.user = user;
         this.type = type;
         this.expiryDate = calculateExpiryDate();
+
+        user.getGeneratedTokens().add(this);
     }
 
     Date calculateExpiryDate() {

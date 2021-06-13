@@ -14,7 +14,7 @@ import com.mkierzkowski.vboard_back.model.user.User;
 import com.mkierzkowski.vboard_back.repository.post.PostCommentRepository;
 import com.mkierzkowski.vboard_back.repository.post.PostLikeRepository;
 import com.mkierzkowski.vboard_back.repository.post.PostRepository;
-import com.mkierzkowski.vboard_back.service.board.BoardService;
+import com.mkierzkowski.vboard_back.service.boardMember.BoardMemberService;
 import com.mkierzkowski.vboard_back.service.user.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ public class PostServiceImpl implements PostService {
     UserService userService;
 
     @Autowired
-    BoardService boardService;
+    BoardMemberService boardMemberService;
 
     @Autowired
     PostRepository postRepository;
@@ -55,7 +55,7 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public Post createPost(CreatePostRequestDto createPostRequestDto) {
         // checks if user is member of requested board
-        BoardMember currentBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(createPostRequestDto.getBoardId());
+        BoardMember currentBoardMember = boardMemberService.getBoardMemberOfCurrentUserForBoardId(createPostRequestDto.getBoardId());
 
         Post postToCreate = new Post(currentBoardMember, createPostRequestDto.getPostText());
 
@@ -67,7 +67,7 @@ public class PostServiceImpl implements PostService {
         Post postToUpdate = getPostById(postId);
 
         // checks if user is member of requested board
-        BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToUpdate.getBoard().getBoardId());
+        BoardMember currentUserBoardMember = boardMemberService.getBoardMemberOfCurrentUserForBoardId(postToUpdate.getBoard().getBoardId());
 
         if (isPostAuthor(postToUpdate, currentUserBoardMember)) {
             postToUpdate.setPostText(updatePostRequestDto.getPostText());
@@ -84,7 +84,7 @@ public class PostServiceImpl implements PostService {
         Post postToDelete = getPostById(postId);
 
         // checks if user is member of requested board
-        BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToDelete.getBoard().getBoardId());
+        BoardMember currentUserBoardMember = boardMemberService.getBoardMemberOfCurrentUserForBoardId(postToDelete.getBoard().getBoardId());
 
         if (currentUserBoardMember.getIsAdmin() || isPostAuthor(postToDelete, currentUserBoardMember)) {
             postRepository.delete(postToDelete);
@@ -96,7 +96,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<Post> getAllBoardPosts(Long boardId, Integer page, String sortBy, String direction) {
         // checks if user is member of requested board
-        BoardMember currentBoardMemberForBoardId = boardService.getBoardMemberOfCurrentUserForBoardId(boardId);
+        BoardMember currentBoardMemberForBoardId = boardMemberService.getBoardMemberOfCurrentUserForBoardId(boardId);
         Pageable pageRequest;
         if (!sortBy.isEmpty() && !direction.isEmpty()) {
             if (sortBy.equals("postDate")) {
@@ -125,7 +125,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<Post> getBoardPostsContainingText(Long boardId, Integer page, String sortBy, String direction, String searchText) {
         // checks if user is member of requested board
-        BoardMember currentBoardMemberForBoardId = boardService.getBoardMemberOfCurrentUserForBoardId(boardId);
+        BoardMember currentBoardMemberForBoardId = boardMemberService.getBoardMemberOfCurrentUserForBoardId(boardId);
         Pageable pageRequest;
         if (!sortBy.isEmpty() && !direction.isEmpty()) {
             if (sortBy.equals("postDate")) {
@@ -154,7 +154,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<Post> getPinnedBoardPosts(Long boardId) {
         // checks if user is member of requested board
-        BoardMember currentBoardMemberForBoardId = boardService.getBoardMemberOfCurrentUserForBoardId(boardId);
+        BoardMember currentBoardMemberForBoardId = boardMemberService.getBoardMemberOfCurrentUserForBoardId(boardId);
         return postRepository.findAllByBoardAndIsPinned(currentBoardMemberForBoardId.getBoard(), true);
     }
 
@@ -164,7 +164,7 @@ public class PostServiceImpl implements PostService {
 
         User currentUser = userService.getCurrentUser();
 
-        if (boardService.isBoardAdmin(postToPin.getBoard(), currentUser)) {
+        if (boardMemberService.isBoardAdmin(postToPin.getBoard(), currentUser)) {
             postToPin.setIsPinned(true);
             postRepository.saveAndFlush(postToPin);
         } else {
@@ -178,7 +178,7 @@ public class PostServiceImpl implements PostService {
 
         User currentUser = userService.getCurrentUser();
 
-        if (boardService.isBoardAdmin(postToUnpin.getBoard(), currentUser)) {
+        if (boardMemberService.isBoardAdmin(postToUnpin.getBoard(), currentUser)) {
             postToUnpin.setIsPinned(false);
             postRepository.saveAndFlush(postToUnpin);
         } else {
@@ -191,7 +191,7 @@ public class PostServiceImpl implements PostService {
         Post postToLike = getPostById(postId);
 
         //checks if user is board member of board on which postToLike is posted
-        BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToLike.getBoard().getBoardId());
+        BoardMember currentUserBoardMember = boardMemberService.getBoardMemberOfCurrentUserForBoardId(postToLike.getBoard().getBoardId());
 
         //checks if user did already like this post
         if (postToLike.getPostLikes().stream()
@@ -214,7 +214,7 @@ public class PostServiceImpl implements PostService {
         Post postToUnlike = getPostById(postId);
 
         //checks if user is board member of board on which postToLike is posted
-        BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToUnlike.getBoard().getBoardId());
+        BoardMember currentUserBoardMember = boardMemberService.getBoardMemberOfCurrentUserForBoardId(postToUnlike.getBoard().getBoardId());
 
         //find current users post like of this post to delete
         PostLike postLikeToDelete = postToUnlike.getPostLikes().stream()
@@ -237,7 +237,7 @@ public class PostServiceImpl implements PostService {
         Post requestedPost = getPostById(postId);
 
         //checks if user is board member of board on which postToLike is posted
-        boardService.getBoardMemberOfCurrentUserForBoardId(requestedPost.getBoard().getBoardId());
+        boardMemberService.getBoardMemberOfCurrentUserForBoardId(requestedPost.getBoard().getBoardId());
 
         PageRequest pageRequest = PageRequest.of(page, 5, Sort.by("createdDate").descending());
 
@@ -249,7 +249,7 @@ public class PostServiceImpl implements PostService {
         Post postToComment = getPostById(postId);
 
         //checks if user is board member of board on which postToLike is posted
-        BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToComment.getBoard().getBoardId());
+        BoardMember currentUserBoardMember = boardMemberService.getBoardMemberOfCurrentUserForBoardId(postToComment.getBoard().getBoardId());
 
         PostComment postCommentEntity = new PostComment(postToComment, currentUserBoardMember, commentPostRequestDto.getCommentText());
 
@@ -269,7 +269,7 @@ public class PostServiceImpl implements PostService {
         PostComment commentToDelete = getCommentById(commentId);
 
         //checks if user is board member of board on which postToLike is posted
-        BoardMember currentUserBoardMember = boardService.getBoardMemberOfCurrentUserForBoardId(postToUpdate.getBoard().getBoardId());
+        BoardMember currentUserBoardMember = boardMemberService.getBoardMemberOfCurrentUserForBoardId(postToUpdate.getBoard().getBoardId());
 
         if (commentToDelete.getBoardMember().equals(currentUserBoardMember)) {
             postCommentRepository.delete(commentToDelete);

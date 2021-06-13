@@ -110,13 +110,13 @@ public class PostController {
         return responseDto;
     }
 
-    @PutMapping("/{postId:.+}/pin")
+    @PostMapping("/{postId:.+}/pin")
     public ResponseEntity<?> pinPost(@PathVariable Long postId) {
         postService.pinPost(postId);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{postId:.+}/unpin")
+    @PostMapping("/{postId:.+}/unpin")
     public ResponseEntity<?> unpinPost(@PathVariable Long postId) {
         postService.unpinPost(postId);
         return ResponseEntity.ok().build();

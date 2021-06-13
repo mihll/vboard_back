@@ -3,6 +3,7 @@ package com.mkierzkowski.vboard_back.model.user;
 import com.mkierzkowski.vboard_back.config.auditing.Auditable;
 import com.mkierzkowski.vboard_back.model.board.BoardJoinRequest;
 import com.mkierzkowski.vboard_back.model.board.BoardMember;
+import com.mkierzkowski.vboard_back.model.token.Token;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -57,6 +58,9 @@ public class User extends Auditable<String> implements UserDetails {
 
     @OneToMany(mappedBy = "user", orphanRemoval = true)
     List<BoardJoinRequest> requestedBoards = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    List<Token> generatedTokens = new ArrayList<>();
 
     public String getName() {
         if (this instanceof PersonUser)

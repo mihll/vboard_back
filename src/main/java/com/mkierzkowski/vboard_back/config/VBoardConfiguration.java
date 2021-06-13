@@ -156,6 +156,6 @@ public class VBoardConfiguration {
     }
 
     private ApiKey apiKey() {
-        return new ApiKey("apiKey", "Authorization", "header");
+        return new ApiKey("JWT", "Authorization", "header");
     }
 }

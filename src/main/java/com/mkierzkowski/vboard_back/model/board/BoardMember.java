@@ -83,7 +83,7 @@ public class BoardMember extends Auditable<String> {
     public int getNotificationsCount() {
         int notificationsCount = 0;
 
-        //TODO: count new posts if user wants notifications for posts
+        //: count new posts if user wants notifications for posts
         if (isAdmin) {
             notificationsCount += board.getBoardJoinRequests().size();
         }

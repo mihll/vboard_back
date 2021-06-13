@@ -22,7 +22,8 @@ public class RefreshController {
     private RefreshTokenService refreshTokenService;
 
     @PostMapping
-    public ResponseEntity<RefreshResponseDto> refreshUserToken(@CookieValue(value = "refreshToken", required = false) String refreshToken, HttpServletResponse response) {
+    public ResponseEntity<RefreshResponseDto> refreshUserToken(@CookieValue(value = "refreshToken", required = false) String refreshToken,
+                                                               HttpServletResponse response) {
 
         if (refreshToken == null) {
             return ResponseEntity.status(401).build();

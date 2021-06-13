@@ -27,7 +27,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     private final AuthenticationManager authenticationManager;
 
-    public JWTAuthenticationFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler authenticationFailureHandler) {
+    public JWTAuthenticationFilter(AuthenticationManager authenticationManager,
+                                   AuthenticationFailureHandler authenticationFailureHandler) {
         this.authenticationManager = authenticationManager;
         this.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/login", "POST"));
         this.setAuthenticationFailureHandler(authenticationFailureHandler);
@@ -75,7 +76,6 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .setProfilePicUrl(authenticatedUser.getProfilePicUrl());
 
         Cookie cookie = new Cookie("refreshToken", refreshToken);
-        //TODO: Change to infinity and store refreshTokens in DB + DB check on refresh to invalidate
         cookie.setMaxAge((int) (REFRESH_TOKEN_EXPIRATION_TIME/1000));
         cookie.setHttpOnly(true);
         cookie.setPath("/refresh");
